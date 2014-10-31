@@ -1,0 +1,40 @@
+# Folders
+build
+lib
+
+# KDevelop
+kde?
+*.kde?
+
+# Generated
+Makefile
+*.o
+moc_*
+
+# Docs
+docs/html
+
+# OS
+.DS_Store
+
+# Editors
+*.swp
+
+# Build folders
+*/debug
+*/release
+*/*/debug
+*/*/release
+
+# Visual studio
+*.suo
+*.ncb
+*.user
+*.pdb
+*.idb
+*.vcproj
+*.vcxproj
+*.vcxproj.filters
+*.lib
+*.sln
+*.rc
