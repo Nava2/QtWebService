@@ -3,8 +3,8 @@ exec_prefix=${prefix}
 includedir=${prefix}/include
 libdir=${exec_prefix}/lib
 
-Name: @qhttpserver_LIB_NAME@
-Description: Drop in http server for web applications
+Name: @QtWebService_LIB_NAME@
+Description: Drop in web service framework for exposing C++ applications to HTTP
 Version: 0.0.1
-Cflags: -I${includedir}/@qhttpserver_LIB_NAME@
-Libs: -L${libdir} -@qhttpserver_LIB_NAME@
+Cflags: -I${includedir}/@QtWebService_LIB_NAME@
+Libs: -L${libdir} -@QtWebService_LIB_NAME@

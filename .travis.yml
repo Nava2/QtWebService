@@ -16,7 +16,7 @@ install:
   - git clone https://github.com/Nava2/qhttpserver.git ~/qhttpserver
   - pushd ~/qhttpserver
   - mkdir build && pushd ./build
-  - cmake -DCMAKE_INSTALL_PREFIX:PATH=~/local/ ..
+  - cmake ..
   - make -j2 all && make install 
   - echo "Finished installing qhttpserver"
   - popd && popd 
