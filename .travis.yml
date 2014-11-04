@@ -1,3 +1,5 @@
+language: cpp
+
 compiler:
   - clang
   - gcc
@@ -17,7 +19,7 @@ install:
   - pushd ~/qhttpserver
   - mkdir build && pushd ./build
   - cmake ..
-  - make -j2 all && make install 
+  - make -j2 all && sudo make install 
   - echo "Finished installing qhttpserver"
   - popd && popd 
 
