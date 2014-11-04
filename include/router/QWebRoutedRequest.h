@@ -31,9 +31,12 @@
 #include <QString>
 #include <QSharedPointer>
 
-#include "../qhttprequest.h"
+#include <QHttpServer/qhttprequest.h>
 
-class QHttpRoutedRequest : public QObject
+#include "private/qtwebserviceapi.h"
+#include "private/qtwebservicefwd.h"
+
+class QTWEBSERVICE_API QWebRoutedRequest : public QObject
 {
     Q_OBJECT
 public:
@@ -47,7 +50,7 @@ public:
      * @param parent QObject parent
      * @return Shared pointer
      */
-    static QSharedPointer<QHttpRoutedRequest> create(QHttpRequest *httpReq,
+    static QSharedPointer<QWebRoutedRequest> create(QHttpRequest *httpReq,
                                       const QHash<QString, QString> &postParams,
                                       const QHash<QString, QString> &urlParams,
                                       const QStringList &splat,
@@ -110,7 +113,7 @@ signals:
 public slots:
 
 private:
-    explicit QHttpRoutedRequest(QHttpRequest *httpReq,
+    explicit QWebRoutedRequest(QHttpRequest *httpReq,
                                 const QHash<QString, QString> &postParams,
                                 const QHash<QString, QString> &urlParams,
                                 const QStringList &splat,

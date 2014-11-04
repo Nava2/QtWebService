@@ -1,5 +1,5 @@
 
-IF (NOT QHTTPSERVER_MAIN )
+IF (NOT QtWebService_LIB_NAME )
     message(fatal_error "Can not configure from this directory")
 ENDIF()
 
@@ -7,7 +7,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/)
 
 find_package(Qt5Test REQUIRED)
 
-SET( qhttpserver_testsrcs 
+SET( QtWebService_testsrcs
 #    qhttproutepathtest.cpp
     qhttproutetest.cpp
 )
@@ -15,21 +15,23 @@ SET( qhttpserver_testsrcs
 include_directories(${INCLUDE_OUTPUT_DIR})
 include_directories("../")
 
-add_executable(qhttpserver-test 
+add_executable(qwebservice-test
     main.cpp
     
     ${qhttpserver_testsrcs})
     
-add_dependencies(qhttpserver-test
-        qhttpserver
+add_dependencies(qwebservice-test
+        QtWebService
     )
 
 LINK_LIBRARIES(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
-target_link_libraries(qhttpserver-test 
-        qhttpserver 
+target_link_libraries(qwebservice-test
         
         #installed libs:
         Qt5::Network 
         Qt5::Core 
-        Qt5::Test)
+        Qt5::Test
+        qhttpserver
+        QtWebService
+)

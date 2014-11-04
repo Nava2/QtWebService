@@ -32,14 +32,15 @@
 #include <QHash>
 #include <QMutex>
 
-#include "../qhttpserverapi.h"
+#include "../private/qtwebserviceapi.h"
+#include "../private/qtwebservicefwd.h"
 
-class QHTTPSERVER_API QHttpRoute {
+class QTWEBSERVICE_API QWebRoute {
 
 public:
 
     //!< typedef for Shared Pointer
-    typedef QSharedPointer<QHttpRoute> Ptr;
+    typedef QSharedPointer<QWebRoute> Ptr;
 
     /**
      * @brief The ParsedRoute class is a resultant type from
@@ -107,7 +108,7 @@ public:
 
     /// No-op
     virtual
-    ~QHttpRoute() { }
+    ~QWebRoute() { }
 
     /*!
      * Full route expression, i.e. `"/profile/:userId/:type/"`
@@ -137,7 +138,7 @@ public:
     
 protected:
 
-    explicit QHttpRoute(const QString route) :
+    explicit QWebRoute(const QString route) :
         _route(route) {
     }
 
@@ -148,7 +149,7 @@ protected:
 /**
  * @brief The QHttpRouteFactory class creates new instances of QHttpRoute
  */
-class QHTTPSERVER_API QHttpRouteFactory {
+class QTWEBSERVICE_API QHttpRouteFactory {
 
 public:
 
@@ -170,11 +171,11 @@ public:
 
     }
 
-    QHttpRoute::Ptr create(const QString &route) const;
+    QWebRoute::Ptr create(const QString &route) const;
 
-    QHttpRoute::Ptr create(const QRegularExpression &regex) const;
+    QWebRoute::Ptr create(const QRegularExpression &regex) const;
 
-    QHttpRoute::Ptr createRegex(const QString &comp) const;
+    QWebRoute::Ptr createRegex(const QString &comp) const;
 
     const CreationError lastError() const{
         return m_lastError;

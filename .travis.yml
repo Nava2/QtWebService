@@ -12,6 +12,13 @@ install:
   - cmake --version
   - qmake -v
   - gcc -v
+  - echo "Installing qhttpserver"
+  - git clone git@github.com:Nava2/qhttpserver.git ~/qhttpserver
+  - pushd ~/qhttpserver
+  - mkdir build && pushd ./build
+  - make -j2 all && make install 
+  - echo "Finished installing qhttpserver"
+  - popd && popd 
 
 script:
   - mkdir build/ && cd build/

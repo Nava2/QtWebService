@@ -19,6 +19,7 @@ docs/html
 
 # Editors
 *.swp
+*.autosave
 
 # Build folders
 */debug

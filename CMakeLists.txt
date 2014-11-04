@@ -1,13 +1,10 @@
 
-project(qwebapplication)
+project(QtWebService)
 
 cmake_minimum_required(VERSION 2.8.11)
 
-SET(QHTTPSERVER_MAIN true)
-
-SET(qwebapplication_LIB_NAME "QtWebApp")
-SET(qwebapplication_LIB_VERSION "0.0.1")
-
+SET(QtWebService_LIB_NAME "QtWebService")
+SET(QtWebService_LIB_VERSION "0.0.1")
 
 IF (NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE "DEBUG")
@@ -38,9 +35,6 @@ ENDIF()
 message(STATUS "Found build chain: ${BUILD_CHAIN}")
 
 SET(INCLUDE_OUTPUT_DIR "${CMAKE_BINARY_DIR}/include")
-SET(INCLUDE_OUTPUT_UTIL_DIR "${INCLUDE_OUTPUT_DIR}/util")
-
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -51,65 +45,59 @@ set(CMAKE_AUTOMOC ON)
 # Qt5:
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Network REQUIRED)
-find_package(QtWebServer REQUIRED)
+find_package(QHttpServer REQUIRED)
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DQWEBAPPLICATION_EXPORT")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DQTWEBAPPLICATION_EXPORT")
 
-SET(qwebapplication_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/")
+SET(QtWebService_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/")
+SET(QtWebService_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/")
 
-# qwebapplication:
+# QtWebService:
 
-SET( qwebapplication_SRCS
+SET( QtWebService_SRCS
+    #general:
+    lib/QWebService.cpp
+    lib/QWebServiceConfig.cpp
+
     #router:
-    src/router/qhttproute.cpp
-    src/router/qhttprouter.cpp
-    src/router/qhttproutedrequest.cpp
+    lib/router/QWebRouter.cpp
+    lib/router/QWebRoute.cpp
+    lib/router/QWebRoutedRequest.cpp
 
 )
 
-SET( qwebapplication_PUBLIC_HEADER
-    src/router/qhttprouter.h
-    src/router/qhttproute.h
-    src/router/qhttproutedrequest.h
+SET( QtWebService_PUBLIC_HEADER
+    include/QWebService.h
+    include/QWebServiceConfig.h
+
+    include/router/QWebRouter.h
+    include/router/QWebRoute.h
+    include/router/QWebRoutedRequest.h
 )
 
-SET( qwebapplication_CMAKE_CONFIG
-    "${qwebapplication_LIB_NAME}Config.cmake"
+SET( QtWebService_PRIVATE_HEADER
+
+    include/private/qtwebserviceapi.h
+    include/private/qtwebservicefwd.h
 )
 
-SET( qwebapplication_PC_CONFIG
-    "lib${qwebapplication_LIB_NAME}.pc"
+SET( QtWebService_CMAKE_CONFIG
+    "${QtWebService_LIB_NAME}Config.cmake"
+)
+
+SET( QtWebService_PC_CONFIG
+    "lib${QtWebService_LIB_NAME}.pc"
     )
 
-add_custom_target(qwebapplication_headers)
-INCLUDE_DIRECTORIES(${INCLUDE_OUTPUT_DIR})
+INCLUDE_DIRECTORIES(${QtWebService_SRC_DIR} ${QtWebService_INCLUDE_DIR})
 
-IF("${CMAKE_BUILD_TYPE}" STREQUAL "RELEASE")
-    MESSAGE(STATUS "Copying Headers for release")
-
-    foreach(header ${qwebapplication_PUBLIC_HEADER})
-        add_custom_command(
-            TARGET qwebapplication_headers
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/${header} ${INCLUDE_OUTPUT_DIR}/${header}
-            MAIN_DEPENDENCY ${header})
-    endforeach()
-else()
-    INCLUDE_DIRECTORIES( ${qwebapplication_SRC_DIR})
-endif()
-
-include_directories(${INCLUDE_OUTPUT_DIR})
-
-add_library(qwebapplication SHARED
-    ${qwebapplication_SRCS}
-    ${qwebapplication_PUBLIC_HEADER}
-    ${http-parser_SRCS}
+add_library(QtWebService SHARED
+    ${QtWebService_SRCS}
+    ${QtWebService_PUBLIC_HEADER}
+    ${QtWebService_PRIVATE_HEADER}
 )
 
-add_dependencies(qwebapplication
-    qwebapplication_headers
-)
-
-target_link_libraries(qwebapplication
+target_link_libraries(QtWebService
         #installed libs:
         Qt5::Network
         Qt5::Core
@@ -117,29 +105,47 @@ target_link_libraries(qwebapplication
 
 # configure:
 SET(BINARY_SHARE_PATH "${CMAKE_CURRENT_BINARY_DIR}/share")
-SET(INSTALL_SHARE_PATH "share/${qwebapplication_LIB_NAME}")
+SET(INSTALL_SHARE_PATH "share/${QtWebService_LIB_NAME}")
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/share/CMakeConfig.cmake"
-    "${BINARY_SHARE_PATH}/${qwebapplication_CMAKE_CONFIG}" )
+    "${BINARY_SHARE_PATH}/${QtWebService_CMAKE_CONFIG}" )
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/share/libpkgconfig.pc"
-    "${BINARY_SHARE_PATH}/${qwebapplication_PC_CONFIG}" )
+    "${BINARY_SHARE_PATH}/${QtWebService_PC_CONFIG}" )
 
 install(
     FILES
-        "${BINARY_SHARE_PATH}/${qwebapplication_PC_CONFIG}"
-        "${BINARY_SHARE_PATH}/${qwebapplication_CMAKE_CONFIG}"
+        "${BINARY_SHARE_PATH}/${QtWebService_PC_CONFIG}"
+        "${BINARY_SHARE_PATH}/${QtWebService_CMAKE_CONFIG}"
     DESTINATION ${INSTALL_SHARE_PATH} )
 
 # INSTALL components:
 
-install(TARGETS qwebapplication
+install(TARGETS QtWebService
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib/static)
 
-install(DIRECTORY src/
-        DESTINATION "include/${qwebapplication_LIB_NAME}"
-        FILES_MATCHING PATTERN "*.h" )
+foreach(header ${QtWebService_PUBLIC_HEADER})
+
+    get_filename_component( fname ${header} NAME )
+    get_filename_component( noExt ${header} NAME_WE )
+    get_filename_component( dir ${header} DIRECTORY )
+    string(TOLOWER ${fname} realName )
+
+    set( text "#pragma once\n#include \"${realName}\"")
+    message( STATUS "header = ${header}; dir = ${dir}; realName = ${realName}; fname = ${fname}" )
+    add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/${dir}/${realName}
+        COMMAND cmake -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/${header} ${CMAKE_BINARY_DIR}/include/${dir}/${realName} )
+    file( WRITE ${CMAKE_BINARY_DIR}/${header} ${text} )
+    add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/${dir}/${noExt}
+        COMMAND cmake -E copy_if_different ${CMAKE_BINARY_DIR}/include/${header}
+                ${CMAKE_BINARY_DIR}/include/${dir}/${noExt} )
+endforeach(header)
+
+install(DIRECTORY ${CMAKE_BINARY_DIR}/include
+        DESTINATION "include/${QtWebService_LIB_NAME}" )
+
+
 
 add_subdirectory(test)

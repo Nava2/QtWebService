@@ -28,27 +28,27 @@
 #include <QHash>
 #include <QList>
 #include <QPair>
+#include <QHttpServer/qhttpserver.h>
 
-#include "../qhttpserverapi.h"
-#include "../qhttpserverfwd.h"
+#include <qwebserviceconfig.h>
 
-#include "../qhttpserver.h"
+#include "private/qtwebserviceapi.h"
+#include "private/qtwebservicefwd.h"
 
-
-class QHTTPSERVER_API QHttpRouter : public QObject
+class QTWEBSERVICE_API QWebRouter : public QObject
 {
     Q_OBJECT
     
     /// @cond nodoc
-    friend class QHttpServer::Config;
+    friend class QWebService;
     /// @endcond
     
 public:
     
     //!< Re-typedef %QHttpServer::RouteFunction
-    typedef QHttpServer::RouteFunction RouteFunction;
+    typedef QWebService::RouteFunction RouteFunction;
     
-    typedef QPair<QSharedPointer<QHttpRoute>, RouteFunction> RoutePair;
+    typedef QPair<QSharedPointer<QWebRoute>, RouteFunction> RoutePair;
     typedef QList<RoutePair> RoutePairList;
     
     //!< Immediately returns HTTP status code 404
@@ -57,7 +57,7 @@ public:
     static const QString DEFAULT_404_MSG;
     static const QRegExp DEFAULT_404_PATH_REPL;
        
-    ~QHttpRouter(); 
+    ~QWebRouter();
     
 private slots:
     
@@ -73,11 +73,11 @@ private slots:
 
 private:
     
-    explicit QHttpRouter(const QHash<QHttpServer::HttpMethod, RoutePairList> routes,
+    explicit QWebRouter(const QHash<QWebService::HttpMethod, RoutePairList> routes,
                          const RouteFunction fourohfour,
                          QObject* parent = nullptr);
 
-    const QHash<QHttpServer::HttpMethod, RoutePairList> m_routes;
+    const QHash<QWebService::HttpMethod, RoutePairList> m_routes;
 
     const RouteFunction m_404;
     
