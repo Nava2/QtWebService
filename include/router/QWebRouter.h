@@ -40,7 +40,7 @@ class QTWEBSERVICE_API QWebRouter : public QObject
     Q_OBJECT
     
     /// @cond nodoc
-    friend class QWebService;
+    friend class QWebServiceConfig;
     /// @endcond
     
 public:

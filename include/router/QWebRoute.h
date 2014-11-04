@@ -149,7 +149,7 @@ protected:
 /**
  * @brief The QHttpRouteFactory class creates new instances of QHttpRoute
  */
-class QTWEBSERVICE_API QHttpRouteFactory {
+class QTWEBSERVICE_API QWebRouteFactory {
 
 public:
 
@@ -160,14 +160,14 @@ public:
         INVALID_REGEX_PRODUCED
     };
 
-    QHttpRouteFactory()
+    QWebRouteFactory()
         : m_errorMutex(),
           m_lastError(CreationError::NO_ERROR),
           m_lastErrorMsg() {
         // no-op
     }
 
-    ~QHttpRouteFactory() {
+    ~QWebRouteFactory() {
 
     }
 

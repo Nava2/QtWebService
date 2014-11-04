@@ -18,7 +18,7 @@ include_directories("../")
 add_executable(qwebservice-test
     main.cpp
     
-    ${qhttpserver_testsrcs})
+    ${QtWebService_testsrcs})
     
 add_dependencies(qwebservice-test
         QtWebService

@@ -49,7 +49,7 @@ find_package(QHttpServer REQUIRED)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DQTWEBAPPLICATION_EXPORT")
 
-SET(QtWebService_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/")
+SET(QtWebService_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib/")
 SET(QtWebService_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/")
 
 # QtWebService:
@@ -101,6 +101,8 @@ target_link_libraries(QtWebService
         #installed libs:
         Qt5::Network
         Qt5::Core
+
+        qhttpserver
     )
 
 # configure:
@@ -126,22 +128,21 @@ install(TARGETS QtWebService
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib/static)
 
-foreach(header ${QtWebService_PUBLIC_HEADER})
+#foreach(header ${QtWebService_PUBLIC_HEADER})
+#    get_filename_component( fname ${header} NAME )
+#    get_filename_component( noExt ${header} NAME_WE )
+#    get_filename_component( dir ${header} DIRECTORY )
+#    string(TOLOWER ${fname} realName )
 
-    get_filename_component( fname ${header} NAME )
-    get_filename_component( noExt ${header} NAME_WE )
-    get_filename_component( dir ${header} DIRECTORY )
-    string(TOLOWER ${fname} realName )
+#    file( WRITE ${CMAKE_BINARY_DIR}/${header} ${text} )
+#    file( WRITE ${CMAKE_BINARY_DIR}/${dir}/${noExt} ${text} )
+#    add_custom_command(OUTPUT
+#                ${CMAKE_BINARY_DIR}/${dir}/${realName}
+#        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/${header}
+#                ${CMAKE_BINARY_DIR}/${dir}/${realName}
+#        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${header} )
 
-    set( text "#pragma once\n#include \"${realName}\"")
-    message( STATUS "header = ${header}; dir = ${dir}; realName = ${realName}; fname = ${fname}" )
-    add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/${dir}/${realName}
-        COMMAND cmake -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/${header} ${CMAKE_BINARY_DIR}/include/${dir}/${realName} )
-    file( WRITE ${CMAKE_BINARY_DIR}/${header} ${text} )
-    add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/${dir}/${noExt}
-        COMMAND cmake -E copy_if_different ${CMAKE_BINARY_DIR}/include/${header}
-                ${CMAKE_BINARY_DIR}/include/${dir}/${noExt} )
-endforeach(header)
+#endforeach(header)
 
 install(DIRECTORY ${CMAKE_BINARY_DIR}/include
         DESTINATION "include/${QtWebService_LIB_NAME}" )
