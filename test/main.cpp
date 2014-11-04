@@ -10,7 +10,9 @@
     
 int main(int argc, char *argv[])
 {
-    TEST(QHttpRouteTest)
+    Q_UNUSED(argc);
+    Q_UNUSED(argv);
+    TEST(QWebRouteTest)
 //    TEST(QHttpRoutePathTest)
         
     return 0;

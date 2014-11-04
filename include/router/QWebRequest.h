@@ -36,7 +36,7 @@
 #include "private/qtwebserviceapi.h"
 #include "private/qtwebservicefwd.h"
 
-class QTWEBSERVICE_API QWebRoutedRequest : public QObject
+class QTWEBSERVICE_API QWebRequest : public QObject
 {
     Q_OBJECT
 public:
@@ -50,7 +50,7 @@ public:
      * @param parent QObject parent
      * @return Shared pointer
      */
-    static QSharedPointer<QWebRoutedRequest> create(QHttpRequest *httpReq,
+    static QSharedPointer<QWebRequest> create(QHttpRequest *httpReq,
                                       const QHash<QString, QString> &postParams,
                                       const QHash<QString, QString> &urlParams,
                                       const QStringList &splat,
@@ -108,16 +108,19 @@ public:
         return m_req;
     }
 
+    virtual
+    ~QWebRequest();
+
 signals:
 
 public slots:
 
 private:
-    explicit QWebRoutedRequest(QHttpRequest *httpReq,
-                                const QHash<QString, QString> &postParams,
-                                const QHash<QString, QString> &urlParams,
-                                const QStringList &splat,
-                                QObject *parent = 0);
+    explicit QWebRequest(QHttpRequest *httpReq,
+                         const QHash<QString, QString> &postParams,
+                         const QHash<QString, QString> &urlParams,
+                         const QStringList &splat,
+                         QObject *parent = 0);
 
     QHttpRequest * const m_req;
     const QHash<QString, QString> m_urlParams;

@@ -4,12 +4,15 @@
 
 // forward classes
 class QWebService;
+class QWebMiddleWare;
 class QWebServiceConfig;
 
 class QWebRouter;
 class QWebRoute;
 class QWebRouteFactory;
-class QWebRoutedRequest;
+class QWebRequest;
+class QWebResponse;
+
 
 
 #endif // QTWEBSERVICEFWD_H

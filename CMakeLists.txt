@@ -11,7 +11,6 @@ IF (NOT CMAKE_BUILD_TYPE)
     message(STATUS "Setting CMAKE_BUILD_TYPE to: DEBUG")
 ENDIF()
 
-
 IF(MINGW)
     SET(CMAKE_CXX_FLAGS "-std=gnu++0x ${CMAKE_CXX_FLAGS}")
     SET(BUILD_CHAIN "mingw")
@@ -40,11 +39,14 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-set(CMAKE_AUTOMOC ON)
+set( CMAKE_AUTOMOC ON )
+include_directories( ${CMAKE_BINARY_DIR} )
 
 # Qt5:
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Network REQUIRED)
+find_package(Qt5Xml REQUIRED)
+
 find_package(QHttpServer REQUIRED)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DQTWEBAPPLICATION_EXPORT")
@@ -59,10 +61,12 @@ SET( QtWebService_SRCS
     lib/QWebService.cpp
     lib/QWebServiceConfig.cpp
 
+    lib/router/QWebRequest.cpp
+    lib/router/QWebResponse.cpp
+
     #router:
     lib/router/QWebRouter.cpp
     lib/router/QWebRoute.cpp
-    lib/router/QWebRoutedRequest.cpp
 
 )
 
@@ -70,9 +74,14 @@ SET( QtWebService_PUBLIC_HEADER
     include/QWebService.h
     include/QWebServiceConfig.h
 
+    include/QWebMiddleWare.h
+
+    include/router/QWebRequest.h
+    include/router/QWebResponse.h
+
+
     include/router/QWebRouter.h
     include/router/QWebRoute.h
-    include/router/QWebRoutedRequest.h
 )
 
 SET( QtWebService_PRIVATE_HEADER
@@ -101,6 +110,7 @@ target_link_libraries(QtWebService
         #installed libs:
         Qt5::Network
         Qt5::Core
+        Qt5::Xml
 
         qhttpserver
     )

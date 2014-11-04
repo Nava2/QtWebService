@@ -4,20 +4,20 @@
 
 #include <QObject>
 
-#include <router/qhttproute.h>
+#include <router/QWebRoute.h>
 
-class QHttpRouteTest : public QObject
+class QWebRouteTest : public QObject
 {
     Q_OBJECT
     
 public: 
-    QHttpRouteTest() : 
+    QWebRouteTest() :
         QObject(),
-        m_factory(new QHttpRouteFactory) {
+        m_factory(new QWebRouteFactory) {
 
     }
     
-    virtual ~QHttpRouteTest() {
+    virtual ~QWebRouteTest() {
         delete m_factory;
     }
     
@@ -35,7 +35,7 @@ private slots:
     
 private:
 
-    const QHttpRouteFactory *m_factory;
+    const QWebRouteFactory *m_factory;
 };
 
-#endif // QHTTPROUTETEST_H
+#endif // QWebRouteTEST_H

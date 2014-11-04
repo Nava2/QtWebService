@@ -7,22 +7,22 @@
 #include <QStringList>
 #include <QHash>
 
-void QHttpRouteTest::initTestCase()
+void QWebRouteTest::initTestCase()
 {
     // Called before the first testfunction is executed
 }
 
-void QHttpRouteTest::cleanupTestCase()
+void QWebRouteTest::cleanupTestCase()
 {
     // Called after the last testfunction was executed
 }
 
-void QHttpRouteTest::init()
+void QWebRouteTest::init()
 {
     // Called before each testfunction is executed
 }
 
-void QHttpRouteTest::cleanup()
+void QWebRouteTest::cleanup()
 {
     // Called after every testfunction
 }
@@ -39,9 +39,9 @@ QStringList spl(QString path) {
         var = ( ptr )->checkPath(qstr, spl(qstr)); \
     }
 
-void QHttpRouteTest::checkRegexPath()
+void QWebRouteTest::checkRegexPath()
 {
-    typedef QHttpRoute::ParsedRoute::Ptr ResultPtr;
+    typedef QWebRoute::ParsedRoute::Ptr ResultPtr;
     {
         auto ptr = m_factory->createRegex("/(?<foo>foo\\d+)/(bar|foo)/");
         CHECK_PATH(ptr, result, "/foo2/bar/");
@@ -83,10 +83,10 @@ void QHttpRouteTest::checkRegexPath()
 /one|two
 /one|two/foo
  */
-void QHttpRouteTest::checkDSLPath_Valid()
+void QWebRouteTest::checkDSLPath_Valid()
 {
 
-    typedef QHttpRoute::ParsedRoute::Ptr ResultPtr;
+    typedef QWebRoute::ParsedRoute::Ptr ResultPtr;
 
     {   // direct match
         auto ptr = m_factory->create("/one/two/three");
@@ -186,9 +186,9 @@ void QHttpRouteTest::checkDSLPath_Valid()
 :no_slash$confusion
 /:name$:bad_colon
  */
-void QHttpRouteTest::checkDSLPath_Invalid() {
+void QWebRouteTest::checkDSLPath_Invalid() {
 
-    typedef QHttpRoute::ParsedRoute::Ptr ResultPtr;
+    typedef QWebRoute::ParsedRoute::Ptr ResultPtr;
 
     // FAILURES:
     {
@@ -197,13 +197,13 @@ void QHttpRouteTest::checkDSLPath_Invalid() {
              "/:name$:bad_colon"}) {
             auto ptr = m_factory->create(path);
             QVERIFY2(!ptr, QTest::toString("Pointer created from: " % path));
-            QVERIFY2(m_factory->lastError() == QHttpRouteFactory::PATH_PART_ERROR,
+            QVERIFY2(m_factory->lastError() == QWebRouteFactory::PATH_PART_ERROR,
                      QTest::toString("No Error on: " % path));
         }
     } {
         auto ptr = m_factory->create(":validName$validOption");
         QVERIFY(!ptr);
-        QCOMPARE(m_factory->lastError(), QHttpRouteFactory::ROOT_MISSING);
+        QCOMPARE(m_factory->lastError(), QWebRouteFactory::ROOT_MISSING);
     }
 }
 

@@ -21,49 +21,44 @@
  */
 
 #pragma once
-#ifndef QWEBSERVICE_H
-#define QWEBSERVICE_H
-
-#include <QObject>
-#include <QSharedPointer>
-#include <QSet>
-#include <QHttpServer/qhttpserver.h>
-#include <QHttpServer/qhttpresponse.h>
-#include <QHttpServer/qhttprequest.h>
+#ifndef Q_WEB_MIDDLE_WARE_H
+#define Q_WEB_MIDDLE_WARE_H
 
 #include "private/qtwebserviceapi.h"
 #include "private/qtwebservicefwd.h"
 
-class QTWEBSERVICE_API QWebService : public QObject {
+#include <QObject>
+
+/**
+ * @brief The MiddleWare class is a purely virtual class which is used as a base for installing MiddleWare into a
+ * QtWebService.
+ *
+ * MiddleWare software is anything which will operate on a %QWebRequest before it reaches a routing function, or on a
+ * %QWebResponse after a routing function completes. There are a series of signals emitted by the QtWebService
+ * framework that can be connected when %MiddleWare::configure is called.
+ */
+class QWebMiddleWare : public QObject {
+
     Q_OBJECT
 
-    /// @cond nodoc
-    friend class QWebServiceConfig;
-    /// @endcond
-
 public:
-    /// Defines the signature for a routing function
-    typedef std::function<void(const QSharedPointer<QWebRequest>, const QSharedPointer<QWebResponse>)> RouteFunction;
 
-    typedef QHttpRequest::HttpMethod HttpMethod;
+    /**
+     * @brief ~QWebMiddleWare No-operation destructor specified for inheritance concerns.
+     */
+    virtual
+    ~QWebMiddleWare() { }
 
     virtual
-    ~QWebService();
+    void configure(QWebService * const service) = 0;
 
-    //
-    // Registration for middleware
-    //
-
-private:
-    QWebService(QHttpServer *server,
-                QWebRouter *router,
-                QSet<QWebMiddleWare *> wares,
-                QObject *parent = nullptr);
-
-    QHttpServer * const m_server;
-    QWebRouter * const m_router;
-    QSet<QWebMiddleWare *> const m_wares;
-
+protected:
+    /**
+     * @brief QWebMiddleWare This ctor is only used by subclasses
+     * @param parent
+     */
+    QWebMiddleWare(QObject *parent);
 };
 
-#endif // QWEBSERVICE_H
+
+#endif // Q_WEB_MIDDLE_WARE_H
