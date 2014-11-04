@@ -1,16 +1,13 @@
-QHttpServer
+QtWebService
 ===========
 
-A Qt HTTP Server - because hard-core programmers write web-apps in C++ :)
+A Qt Web Service framework for easily exposing C++ code to the Web via HTTP. 
 
-[![Build Status](https://travis-ci.org/Nava2/qhttpserver.svg)](https://travis-ci.org/Nava2/qhttpserver)
+[![Build Status](https://travis-ci.org/Nava2/QtWebService.svg)](https://travis-ci.org/Nava2/QtWebService)
 
-It uses Joyent's [HTTP Parser](http://github.com/joyent/http-parser) and is asynchronous and does not require any inheritance.
+This server leverages the [QHttpServer project](https://github.com/nikhilm/qhttpserver) as the back end. 
 
-QHttpServer is available under the MIT License.
-
-**NOTE: QHttpServer is NOT fully HTTP compliant right now! DO NOT use it for
-anything complex**
+QtWebService is available under the MIT License.
 
 Installation
 ------------
@@ -21,7 +18,7 @@ Requires Qt 4 or Qt 5. (Untested on Qt 4)
 
 To link to your projects put this in your project's qmake project file
 
-    LIBS += -lqhttpserver
+    LIBS += -lQtWebService
 
 By default, the installation prefix is /usr/local. To change that to /usr,
 for example, run:
@@ -30,6 +27,8 @@ for example, run:
 
 Usage
 -----
+
+IGNORE THIS SECTION
 
 Include the headers
 
@@ -62,12 +61,7 @@ these.
 Contribute
 ----------
 
-This project is a fork of the original, by Nikhil Marathe 
-(https://github.com/nikhilm/qhttpserver) and all of his original copyright 
-notices are maintained. This project aims to add features on top of the 
-original reference implementation to allow for easier application development. 
-
-As with Nikhil, I welcome contributions. Bug fixes and pull requests are ideal.
+I welcome contributions. Bug fixes and pull requests are ideal.
 
 If you're going to implement a large feature, please open an issue with the details before spending time. 
 
@@ -75,6 +69,6 @@ Cheers,
 
 Kevin
 
-Everybody who has ever contributed shows up in [Contributors](https://github.com/Nava2/qhttpserver/graphs/contributors).
+Everybody who has ever contributed shows up in [Contributors](https://github.com/Nava2/QtWebService/graphs/contributors).
 
 
