@@ -41,19 +41,42 @@
 class QTWEBSERVICE_API QWebResponse : public QObject
 {
     Q_OBJECT
+
 public:
+
+    enum ResponseError {
+        SUCCESS = 0,
+
+        //!< Tried to write response, no data was set
+        NO_DATA_SET,
+
+        //!< QFile was attempted to be read, and was non-existant
+        FILE_DOES_NOT_EXIST = 10,
+        FILE_COULD_NOT_OPEN,
+
+        NULLPTR = 100
+    };
+
+    typedef QHttpResponse::StatusCode StatusCode;
 
     /**
      * @brief create Create a new instance of %QWebRequest
-     * @param httpReq %QHttpRequest as the base
-     * @param urlParams Any parameters that were stored in the url
-     * @param splat If a wildcard was used in the URL, this will be matches
-     *      from the wildcard.
-     * @param parent QObject parent
      * @return Shared pointer
      */
-    static QSharedPointer<QWebResponse> create(QHttpResponse *httpResp,
-                                      QObject *parent = 0);
+    static QSharedPointer<QWebResponse> create();
+
+    /**
+     * @brief setHeader Sets a header parameter based on the type passed
+     * @param key
+     * @param value
+     */
+    void setHeader(const QString key, const QString value);
+
+    /**
+     * @brief setStatusCode Set the response to use the status code.
+     * @param code
+     */
+    void setStatusCode(StatusCode code);
 
     /**
      * @brief writeFile Enqueues the %QFile to be written to the output stream as a byte array. This is done by reading
@@ -61,9 +84,9 @@ public:
      * @param file File that will be read, this will emit the signal to middleware hooks
      * @return
      */
-    bool writeFile(const QFile &file);
+    bool writeFile( QFile file);
 
-    bool writeText(const QString &text);
+    bool writeText(const QString text, const QString contentType = "text/plain");
 
 //    bool writeText(const QByteArray &text);
 
@@ -77,20 +100,32 @@ public:
      */
     bool isValidResponse();
 
+    /**
+     * @brief writeToResponse writes the stored data to the QHttpResponse instance
+     * @param httpResponse Response to write data to
+     * @return
+     */
+    ResponseError writeToResponse(QSharedPointer<QWebRequest> req, QHttpResponse *httpResponse);
+
+
     virtual
     ~QWebResponse();
 
 signals:
 
-public slots:
+    /**
+     * @brief modifyOutputData emitted when data is about to be written to a QHttpResponse
+     * @param in
+     * @param out use QSharedPointer::reset to set this shared pointer to a new value for use
+     */
+    void responseDataPrepared(QSharedPointer<QWebRequest> req, QByteArray in, QSharedPointer<QByteArray> &out);
 
 private:
-    explicit QWebResponse(QHttpResponse *httpResp,
-                         QObject *parent = 0);
+    QWebResponse();
 
-    QHttpResponse * const m_resp;
-    std::function<void()> m_outFunc;
-
+    std::function<QByteArray(ResponseError *)> m_outFunc;
+    QHash<QString, QString> m_headers;
+    StatusCode m_status;
 };
 
 #endif // QWEBRESPONSE_H

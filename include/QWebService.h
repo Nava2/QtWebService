@@ -27,15 +27,18 @@
 #include <QObject>
 #include <QSharedPointer>
 #include <QSet>
+#include <QDebug>
 #include <QHttpServer/qhttpserver.h>
 #include <QHttpServer/qhttpresponse.h>
 #include <QHttpServer/qhttprequest.h>
+#include <functional>
 
 #include "private/qtwebserviceapi.h"
 #include "private/qtwebservicefwd.h"
 
+#include "QWebMiddleWare.h"
+
 class QTWEBSERVICE_API QWebService : public QObject {
-    Q_OBJECT
 
     /// @cond nodoc
     friend class QWebServiceConfig;
@@ -50,20 +53,54 @@ public:
     virtual
     ~QWebService();
 
-    //
-    // Registration for middleware
-    //
+    /**
+     * @brief registerMiddleWare Simple wrapper for %QWebMiddleWareRegistrar::registerMiddleWare
+     * @param ware Middle Ware to register
+     * @return reference to QWebMiddleWareRegistrar to chain.
+     */
+    // TODO Move to Config :/
+    QWebMiddleWareRegistrar &registerMiddleWare(QWebMiddleWare * const ware) {
+        return m_registrar.registerMiddleWare(ware);
+    }
+
+    const QWebMiddleWareRegistrar * const getMiddleWareRegistrar() const {
+        return &m_registrar;
+    }
+
+signals:
+
+    /**
+     * @brief start Emitted when the service starts
+     */
+    void start();
+
+    /**
+     * @brief stop Emitted when the service stops
+     */
+    void stop();
+
+
+
 
 private:
     QWebService(QHttpServer *server,
                 QWebRouter *router,
-                QSet<QWebMiddleWare *> wares,
                 QObject *parent = nullptr);
 
     QHttpServer * const m_server;
     QWebRouter * const m_router;
-    QSet<QWebMiddleWare *> const m_wares;
+
+    QWebMiddleWareRegistrar m_registrar;
+
 
 };
+
+//QDebug operator<<(QDebug dbg, const QWebService &service)
+//{
+//    dbg.nospace() << "QWebService{0x" << QString::number((long)&service, 16) << "}";
+
+//    return dbg.space();
+//}
+
 
 #endif // QWEBSERVICE_H

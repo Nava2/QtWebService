@@ -4,8 +4,10 @@
 
 // forward classes
 class QWebService;
-class QWebMiddleWare;
 class QWebServiceConfig;
+
+class QWebMiddleWare;
+class QWebMiddleWareRegistrar;
 
 class QWebRouter;
 class QWebRoute;

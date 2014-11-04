@@ -232,7 +232,7 @@ QWebRoute::Ptr QWebRouteFactory::create(const QString &route) const {
         return QWebRoute::Ptr();
     }
 
-    qDebug() << "Parsed: '" << route << "' -> '" << re.pattern() << '\'';
+//    qDebug() << "Parsed: '" << route << "' -> '" << re.pattern() << '\'';
 
     clearError();
     return QWebRoute::Ptr(new QWebRoute_Regex(re));

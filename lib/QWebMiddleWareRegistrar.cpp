@@ -20,50 +20,36 @@
  * IN THE SOFTWARE.
  */
 
-#pragma once
-#ifndef Q_WEB_MIDDLE_WARE_H
-#define Q_WEB_MIDDLE_WARE_H
-
-#include "private/qtwebserviceapi.h"
-#include "private/qtwebservicefwd.h"
-
+#include "QWebMiddleWare.h"
 #include "QWebMiddleWareRegistrar.h"
 
-#include <QObject>
+QWebMiddleWareRegistrar::QWebMiddleWareRegistrar(QObject *parent) :
+    QObject(parent)
+{
+}
 
-/**
- * @brief The MiddleWare class is a purely virtual class which is used as a base for installing MiddleWare into a
- * QtWebService.
- *
- * MiddleWare software is anything which will operate on a %QWebRequest before it reaches a routing function, or on a
- * %QWebResponse after a routing function completes. There are a series of signals emitted by the QtWebService
- * framework that can be connected when %MiddleWare::configure is called.
- */
-class QWebMiddleWare : public QObject {
+QWebMiddleWareRegistrar::~QWebMiddleWareRegistrar() {
+}
 
-    Q_OBJECT
+QWebMiddleWareRegistrar &QWebMiddleWareRegistrar::registerMiddleWare(QWebMiddleWare * const ware) {
 
-public:
+    Entry *entry = new Entry(this);
 
-    //!< Convenience typedef
-    typedef QWebMiddleWareRegistrar::Entry RegistrarEntry;
+    ware->setParent(this);
+    ware->configure(entry);
 
-    /**
-     * @brief ~QWebMiddleWare No-operation destructor specified for inheritance concerns.
-     */
-    virtual
-    ~QWebMiddleWare() { }
+    m_entries.append(entry);
 
-    virtual
-    void configure(RegistrarEntry * const entry) = 0;
+    return *this;
+}
 
-protected:
-    /**
-     * @brief QWebMiddleWare This ctor is only used by subclasses
-     * @param parent
-     */
-    QWebMiddleWare(QObject *parent) : QObject(parent) { }
-};
-
-
-#endif // Q_WEB_MIDDLE_WARE_H
+void QWebMiddleWareRegistrar::webResponseDataPrepared(QSharedPointer<QWebRequest> req, QByteArray in, QSharedPointer<QByteArray> &out) {
+   bool result = false;
+   for (Entry * entry : m_entries) {
+       result = entry->webResponseDataPrepared(req, in, out);
+       if (result) {
+           // stop once one of them returns true
+           break ;
+       }
+   }
+}

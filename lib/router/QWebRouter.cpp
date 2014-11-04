@@ -118,16 +118,21 @@ void QWebRouter::handleRoute(QHttpRequest* request, QHttpResponse* resp)
     auto reqPtr = QWebRequest::create(request, postParams,
                                           routeResponse->urlParams(),
                                           routeResponse->splat());
-    auto respPtr = QWebResponse::create(resp);
+    QSharedPointer<QWebResponse> webRespPtr = QWebResponse::create();
 
-    connect(request, &QHttpRequest::end, [this, func, reqPtr, respPtr]() {
+    connect(webRespPtr.data(), &QWebResponse::responseDataPrepared,
+            m_service->getMiddleWareRegistrar(), &QWebMiddleWareRegistrar::webResponseDataPrepared);
+
+    connect(request, &QHttpRequest::end, [this, func, reqPtr, resp, webRespPtr]() {
         if (func) {
             // we found a proper route:
-            func(reqPtr, respPtr);
+            func(reqPtr, webRespPtr);
         } else {
             // 404:
-            m_404(reqPtr, respPtr);
+            m_404(reqPtr, webRespPtr);
         }
+
+        webRespPtr->writeToResponse(reqPtr, resp);
     });
 }
 

@@ -24,16 +24,20 @@
 #ifndef QHTTPROUTER_H
 #define QHTTPROUTER_H
 
+#include "private/qtwebserviceapi.h"
+#include "private/qtwebservicefwd.h"
+
+#include "QWebService.h"
+
+#include <iostream>
+
 #include <QObject>
 #include <QHash>
 #include <QList>
+#include <QDebug>
 #include <QPair>
 #include <QHttpServer/qhttpserver.h>
 
-#include <qwebserviceconfig.h>
-
-#include "private/qtwebserviceapi.h"
-#include "private/qtwebservicefwd.h"
 
 class QTWEBSERVICE_API QWebRouter : public QObject
 {
@@ -77,11 +81,28 @@ private:
                          const RouteFunction fourohfour,
                          QObject* parent = nullptr);
 
+    void setWebService(QWebService * const service) {
+        if (!m_service && service) {
+            m_service = service;
+        } else {
+            qDebug() << "Tried to reset WebService to a second time";
+        }
+    }
+
     const QHash<QWebService::HttpMethod, RoutePairList> m_routes;
 
     const RouteFunction m_404;
+
+    const QWebService *m_service;
     
 };
+
+//QDebug operator<<(QDebug dbg, const QWebRouter &router)
+//{
+//    dbg.nospace() << "QWebRouter{0x" << QString::number((long)&router, 16) << "}";
+
+//    return dbg.space();
+//}
 
 #undef HTTP_METHOD
 

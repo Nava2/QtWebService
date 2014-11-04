@@ -22,38 +22,115 @@
 
 #include "router/QWebResponse.h"
 
-QWebResponse::QWebResponse(QHttpResponse *httpResp,
-                           QObject *parent)
-    : QObject(parent),
-      m_resp(httpResp),
-      m_outFunc(nullptr)
+#include <QPair>
+#include <QFile>
+#include <QFileInfo>
+#include <QIODevice>
+#include <QDebug>
+
+QWebResponse::QWebResponse()
+    : m_outFunc(nullptr), m_status(StatusCode::STATUS_OK)
 {
 
 }
 
-QSharedPointer<QWebResponse> QWebResponse::create(QHttpResponse *httpReq,
-                                                  QObject *parent) {
-    QWebResponse *ptr = new QWebResponse(httpReq, parent);
-
-    if (parent != nullptr) {
-        return QSharedPointer<QWebResponse>(ptr, &QObject::deleteLater);
-    }
-
-    return QSharedPointer<QWebResponse>(ptr);
+QSharedPointer<QWebResponse> QWebResponse::create() {
+    return QSharedPointer<QWebResponse>(new QWebResponse);
 }
 
 QWebResponse::~QWebResponse() {
     // no-op
 }
 
+void QWebResponse::setHeader(const QString key, const QString value) {
+    if (!key.isEmpty()) {
+        m_headers[key] = value;
+    } else {
+        qDebug() << "Tried to set empty Key to value:" << value;
+    }
+}
+
+void QWebResponse::setStatusCode(StatusCode code) {
+    m_status = code;
+}
+
 bool QWebResponse::isValidResponse() {
     return (bool)m_outFunc;
 }
 
-bool QWebResponse::writeFile(const QFile &file) {
-    return false;
+bool QWebResponse::writeFile(QFile file) {
+    const QFileInfo info(file);
+
+    m_outFunc = [info](ResponseError *error) -> QByteArray {
+        // check if the file exists
+        if (!info.exists()) {
+            *error = FILE_DOES_NOT_EXIST;
+            return QByteArray();
+        }
+
+        QFile file(info.path());
+
+        // open it for reading
+        if (!file.open(QIODevice::ReadOnly)) {
+            *error = FILE_COULD_NOT_OPEN;
+
+            return QByteArray();
+        }
+
+        // read the file!
+        *error = SUCCESS;
+        QByteArray out = file.readAll();
+        file.close();
+
+        return out;
+    };
+
+    return true;
 }
 
-bool QWebResponse::writeText(const QString &text) {
-    return false;
+bool QWebResponse::writeText(const QString text, const QString contentType) {
+
+    m_outFunc = [text](ResponseError *error) -> QByteArray {
+        QByteArray out;
+        out.reserve(text.length());
+        out.append(text);
+
+        return out;
+    };
+
+    if (!m_headers.contains("Content-Type")) {
+         m_headers["Content-Type"] = contentType.isEmpty() ? "text/plain" : contentType;
+    }
+
+    return true;
+}
+
+QWebResponse::ResponseError QWebResponse::writeToResponse(QSharedPointer<QWebRequest> req,
+                                                          QHttpResponse *httpResponse) {
+    if (!isValidResponse()) {
+        return NO_DATA_SET;
+    }
+
+    ResponseError error = SUCCESS;
+    QByteArray buff = m_outFunc(&error);
+
+    if (error != SUCCESS) {
+        return error;
+    }
+
+    QSharedPointer<QByteArray> outPtr;
+    emit responseDataPrepared(req, buff, outPtr);
+
+    const QByteArray &out = outPtr ? *outPtr : buff;
+
+    httpResponse->setHeader("Content-Length", QString::number(buff.length()));
+    for (QString key : m_headers.keys()) {
+        httpResponse->setHeader(key, m_headers[key]);
+    }
+
+    httpResponse->writeHead(m_status);
+    httpResponse->write(out);
+    httpResponse->end();
+
+    return SUCCESS;
 }

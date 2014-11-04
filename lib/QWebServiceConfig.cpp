@@ -28,7 +28,7 @@ QWebServiceConfig::~QWebServiceConfig() {
 
 QWebService* QWebServiceConfig::build(QObject* parent) const
 {
-    typedef QPair<QWebRoute::Ptr, RouteFunction> RouteHandler;
+    typedef QPair<QWebRoute::Ptr, QWebService::RouteFunction> RouteHandler;
 
     QHash<QWebService::HttpMethod, QList<RouteHandler> > handlerTable;
 
@@ -68,7 +68,7 @@ QWebService* QWebServiceConfig::build(QObject* parent) const
 
     // handlerTable is now populated minimizing QHttpRoute instances
 
-    RouteFunction fourohfour = this->m_404;
+    QWebService::RouteFunction fourohfour = this->m_404;
     if (!fourohfour) {
         fourohfour = QWebRouter::DEFAULT_404;
     }
@@ -77,7 +77,8 @@ QWebService* QWebServiceConfig::build(QObject* parent) const
     auto router = new QWebRouter(handlerTable, fourohfour);
 
     auto server = new QHttpServer();
-    auto service = new QWebService(server, router, QSet<QWebMiddleWare*>(), parent);
+    auto service = new QWebService(server, router, parent);
+    router->setWebService(service);
 
     router->setParent(service);
     server->setParent(service);

@@ -41,9 +41,6 @@ class QTWEBSERVICE_API QWebServiceConfig {
 
 public:
 
-    /// Redefines typedef
-    typedef QWebService::RouteFunction RouteFunction;
-
     /// Key used for storing routing information while configuring, this should
     /// not be used outside of %QWebServiceConfig
     class Key {
@@ -64,7 +61,7 @@ public:
         const bool isPath;
 
         //!< Routing fuction pointer
-        const RouteFunction func;
+        const QWebService::RouteFunction func;
 
     public:
         /**
@@ -235,7 +232,7 @@ public:
         * \param func a function that matches \ref RouteFunction specification.
         * \return reference to `*this`.
         */
-    QWebServiceConfig &fourohfour(RouteFunction func);
+    QWebServiceConfig &fourohfour(QWebService::RouteFunction func);
 
     /*!
         * Installs a 404 handler, the default behaviour is to redirect the
@@ -267,7 +264,7 @@ private:
      * creating a %std::function.
      */
     template <class T> inline
-    RouteFunction bindHandler(T *handler) {
+    QWebService::RouteFunction bindHandler(T *handler) {
         // force it, this should be compiled away anyway in Opt.
         const QObject *tmp = static_cast<const T *>(nullptr);
         Q_UNUSED(tmp);

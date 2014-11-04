@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Kevin Brightwell <kevin.brightwell2@gmail.com>
+ * Copyright 2014 kevin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -20,50 +20,36 @@
  * IN THE SOFTWARE.
  */
 
-#pragma once
-#ifndef Q_WEB_MIDDLE_WARE_H
-#define Q_WEB_MIDDLE_WARE_H
+#ifndef TEMPLATEPARSER_H
+#define TEMPLATEPARSER_H
 
 #include "private/qtwebserviceapi.h"
 #include "private/qtwebservicefwd.h"
 
-#include "QWebMiddleWareRegistrar.h"
+#include "QWebMiddleWare.h"
+#include "QWebService.h"
+#include "router/QWebRequest.h"
 
-#include <QObject>
-
-/**
- * @brief The MiddleWare class is a purely virtual class which is used as a base for installing MiddleWare into a
- * QtWebService.
- *
- * MiddleWare software is anything which will operate on a %QWebRequest before it reaches a routing function, or on a
- * %QWebResponse after a routing function completes. There are a series of signals emitted by the QtWebService
- * framework that can be connected when %MiddleWare::configure is called.
- */
-class QWebMiddleWare : public QObject {
-
-    Q_OBJECT
-
+class TemplateParser : public QWebMiddleWare
+{
 public:
-
-    //!< Convenience typedef
-    typedef QWebMiddleWareRegistrar::Entry RegistrarEntry;
+    TemplateParser(QObject *parent = nullptr);
 
     /**
      * @brief ~QWebMiddleWare No-operation destructor specified for inheritance concerns.
      */
     virtual
-    ~QWebMiddleWare() { }
+    ~TemplateParser() { }
 
     virtual
-    void configure(RegistrarEntry * const entry) = 0;
+    void configure(RegistrarEntry * const entry) {
+        connect(entry, &QWebMiddleWareRegistrar::Entry::webResponseDataPrepared,
+                this, &TemplateParser::myFunc);
+    }
 
-protected:
-    /**
-     * @brief QWebMiddleWare This ctor is only used by subclasses
-     * @param parent
-     */
-    QWebMiddleWare(QObject *parent) : QObject(parent) { }
+    bool myFunc(QSharedPointer<QWebRequest> req, QByteArray in, QSharedPointer<QByteArray> &out) {
+        return false;
+    }
 };
 
-
-#endif // Q_WEB_MIDDLE_WARE_H
+#endif // TEMPLATEPARSER_H

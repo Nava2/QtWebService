@@ -68,6 +68,8 @@ SET( QtWebService_SRCS
     lib/router/QWebRouter.cpp
     lib/router/QWebRoute.cpp
 
+    lib/middleware/TemplateParser.cpp
+    lib/QWebMiddleWareRegistrar.cpp
 )
 
 SET( QtWebService_PUBLIC_HEADER
@@ -75,13 +77,15 @@ SET( QtWebService_PUBLIC_HEADER
     include/QWebServiceConfig.h
 
     include/QWebMiddleWare.h
+    include/QWebMiddleWareRegistrar.h
 
     include/router/QWebRequest.h
     include/router/QWebResponse.h
 
-
     include/router/QWebRouter.h
     include/router/QWebRoute.h
+
+    include/middleware/TemplateParser.h
 )
 
 SET( QtWebService_PRIVATE_HEADER

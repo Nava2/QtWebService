@@ -1,4 +1,4 @@
-#include "qhttproutetest.h"
+#include "QWebRouteTest.h"
 
 #include <QtTest>
 

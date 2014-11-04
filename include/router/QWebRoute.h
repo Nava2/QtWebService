@@ -32,8 +32,8 @@
 #include <QHash>
 #include <QMutex>
 
-#include "../private/qtwebserviceapi.h"
-#include "../private/qtwebservicefwd.h"
+#include "private/qtwebserviceapi.h"
+#include "private/qtwebservicefwd.h"
 
 class QTWEBSERVICE_API QWebRoute {
 
@@ -138,8 +138,8 @@ public:
     
 protected:
 
-    explicit QWebRoute(const QString route) :
-        _route(route) {
+    explicit QWebRoute(const QString route)
+        : _route(route) {
     }
 
     const QString _route;

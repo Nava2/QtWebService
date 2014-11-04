@@ -9,7 +9,7 @@ find_package(Qt5Test REQUIRED)
 
 SET( QtWebService_testsrcs
 #    qhttproutepathtest.cpp
-    qhttproutetest.cpp
+    QWebRouteTest.cpp
 )
 
 include_directories(${INCLUDE_OUTPUT_DIR})

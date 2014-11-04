@@ -1,6 +1,7 @@
 #include <QTest>
 
-#include "qhttproutetest.h"
+#include "QWebRouteTest.h"
+
 //#include "qhttproutepathtest.h"
     
 #define TEST( type ) { \
