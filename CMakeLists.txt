@@ -142,6 +142,10 @@ install(TARGETS QtWebService
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib/static)
 
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
+        DESTINATION "include/${QtWebService_LIB_NAME}"
+        FILES_MATCHING REGEX ".*\\.h(pp)?$" )
+
 #foreach(header ${QtWebService_PUBLIC_HEADER})
 #    get_filename_component( fname ${header} NAME )
 #    get_filename_component( noExt ${header} NAME_WE )
@@ -157,10 +161,5 @@ install(TARGETS QtWebService
 #        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${header} )
 
 #endforeach(header)
-
-install(DIRECTORY ${CMAKE_BINARY_DIR}/include
-        DESTINATION "include/${QtWebService_LIB_NAME}" )
-
-
 
 add_subdirectory(test)
