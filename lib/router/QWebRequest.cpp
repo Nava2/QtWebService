@@ -2,10 +2,10 @@
 
 
 QWebRequest::QWebRequest(QHttpRequest *httpReq,
-                                       const QHash<QString, QString> &postParams,
-                                       const QHash<QString, QString> &urlParams,
-                                       const QStringList &splat,
-                                       QObject *parent) :
+                         const QHash<QString, QString> &postParams,
+                         const QHash<QString, QString> &urlParams,
+                         const QStringList &splat,
+                         QObject *parent) :
     QObject(parent),
     m_req(httpReq),
     m_urlParams(urlParams),

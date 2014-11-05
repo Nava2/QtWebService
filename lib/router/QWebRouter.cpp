@@ -39,17 +39,18 @@ const QString QWebRouter::DEFAULT_404_MSG =
     "</head>" 
     "<body>"
     "   <h1>404 Page Not Found</h1>"
-    "   <p><b>Requested:</b> ${page}</p>"
+    "   <p><b>Requested:</b> <pre>${page}</pre></p>"
     "</body>"
     "</html>\n\n";
     
 const QRegExp QWebRouter::DEFAULT_404_PATH_REPL("\\$\\{page\\}");
     
 const QWebRouter::RouteFunction QWebRouter::DEFAULT_404 = [](QSharedPointer<QWebRequest> req,
-                                                               QSharedPointer<QWebResponse> resp) {
+                                                             QSharedPointer<QWebResponse> resp) {
         QString msg = QWebRouter::DEFAULT_404_MSG;
+        resp->setStatusCode(QWebResponse::StatusCode::STATUS_NOT_FOUND);
         resp->writeText(msg.replace(QWebRouter::DEFAULT_404_PATH_REPL,
-                                            req->path()));
+                                            req->path()), "text/html");
     };
 
 QWebRouter::QWebRouter(const QHash<QWebService::HttpMethod, RoutePairList> routes,
@@ -106,7 +107,7 @@ void QWebRouter::handleRoute(QHttpRequest* request, QHttpResponse* resp)
   
     // search for the first matching path
     for (RoutePair pair : routes) {
-        QSharedPointer<QWebRoute::ParsedRoute> resp(pair.first->checkPath(route, sepPath));
+        QSharedPointer<QWebRoute::ParsedRoute> resp = pair.first->checkPath(route, sepPath);
         if (resp) {
             func = pair.second;
             routeResponse = resp;
@@ -115,9 +116,16 @@ void QWebRouter::handleRoute(QHttpRequest* request, QHttpResponse* resp)
         }
     }
 
-    auto reqPtr = QWebRequest::create(request, postParams,
-                                          routeResponse->urlParams(),
-                                          routeResponse->splat());
+    QSharedPointer<QWebRequest> reqPtr;
+
+    if (routeResponse) {
+        reqPtr = QWebRequest::create(request, postParams,
+                                     routeResponse->urlParams(),
+                                     routeResponse->splat());
+    } else {
+        reqPtr = QWebRequest::create(request, postParams, QHash<QString, QString>(), QStringList());
+    }
+
     QSharedPointer<QWebResponse> webRespPtr = QWebResponse::create();
 
     connect(webRespPtr.data(), &QWebResponse::responseDataPrepared,

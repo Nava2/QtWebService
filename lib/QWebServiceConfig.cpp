@@ -51,7 +51,7 @@ QWebService* QWebServiceConfig::build(QObject* parent) const
                 if (route->isPath) {
                     routeObj = m_factory->create(route->path);
                 } else {
-                    routeObj = m_factory->create(route->reg);
+                    routeObj = m_factory->createRegex(route->reg);
                 }
 
                 // TODO CHECK FOR ERRORS

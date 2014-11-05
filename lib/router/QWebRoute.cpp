@@ -66,6 +66,8 @@ public:
 
         QRegularExpressionMatch match = m_urlPattern.match(path, 0, QRE::NormalMatch, QRE::AnchoredMatchOption);
 
+        // check if there was a match, if there is then make sure that it was the entire
+        // expression, not part of it
         if (!match.hasMatch()) {
             return ParsedRoute::Ptr();
         }
@@ -98,10 +100,10 @@ private:
 
 
 QWebRoute::Ptr QWebRouteFactory::createRegex(const QString &comp) const {
-    return create(QRegularExpression(comp));
+    return createRegex(QRegularExpression(comp));
 }
 
-QWebRoute::Ptr QWebRouteFactory::create(const QRegularExpression &regex) const {
+QWebRoute::Ptr QWebRouteFactory::createRegex(const QRegularExpression &regex) const {
     clearError();
     return QWebRoute::Ptr(new QWebRoute_Regex(regex));
 }
@@ -208,7 +210,7 @@ QString convertPathSyntax(const QString &path, QWebRouteFactory::CreationError *
     }
 
     *error = QWebRouteFactory::NO_ERROR;
-    QString out = QChar('/') % outParts.join('/');
+    QString out = "^/" % outParts.join('/') % "$";
 
     return out;
 }

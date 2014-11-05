@@ -70,7 +70,7 @@ public:
          * @param func Routing function
          * @return Shared Pointer to new %Key instance
          */
-        static Ptr create(const QRegularExpression &reg, QWebService::RouteFunction func) {
+        static Ptr createRegex(const QRegularExpression &reg, QWebService::RouteFunction func) {
             return Ptr(new Key(reg, func));
         }
 
@@ -88,14 +88,15 @@ public:
         explicit
         Key(const QString &path, QWebService::RouteFunction func)
             : path(path), reg(), strRep(path),
-              isPath(false), func(func) {
+              isPath(true), func(func) {
 
         }
 
         explicit
         Key(const QRegularExpression &reg, QWebService::RouteFunction func)
             : path(), reg(reg), strRep(reg.pattern()),
-              isPath(true), func(func) {
+              isPath(false), func(func) {
+
         }
     };
 
@@ -134,7 +135,7 @@ public:
     template <typename T> \
     inline \
     QWebServiceConfig & name (const QRegularExpression &regRoute, T * handler) { \
-        return QWebServiceConfig:: name (Key::create(regRoute, bindHandler(handler))); \
+        return QWebServiceConfig:: name (Key::createRegex(regRoute, bindHandler(handler))); \
     } \
     \
     QWebServiceConfig & name (const QString path, QWebService::RouteFunction func) { \
@@ -142,7 +143,7 @@ public:
     } \
     \
     QWebServiceConfig & name (const QRegularExpression &regRoute, QWebService::RouteFunction func) { \
-        return QWebServiceConfig:: name (Key::create(regRoute, func)); \
+        return QWebServiceConfig:: name (Key::createRegex(regRoute, func)); \
     } \
     \
     QWebServiceConfig & name ( const Key::Ptr key )

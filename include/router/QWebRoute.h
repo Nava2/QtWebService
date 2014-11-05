@@ -173,7 +173,7 @@ public:
 
     QWebRoute::Ptr create(const QString &route) const;
 
-    QWebRoute::Ptr create(const QRegularExpression &regex) const;
+    QWebRoute::Ptr createRegex(const QRegularExpression &regex) const;
 
     QWebRoute::Ptr createRegex(const QString &comp) const;
 
