@@ -34,6 +34,7 @@
 #include <QStringList>
 #include <QFile>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QDomDocument>
 
 #include <QHttpServer/qhttpresponse.h>
@@ -90,7 +91,12 @@ public:
 
 //    bool writeText(const QByteArray &text);
 
-//    bool writeJSON(const QJsonDocument &doc);
+    bool writeJson(const QJsonDocument doc);
+
+    inline
+    bool writeJson(const QJsonObject &obj) {
+        return writeJson(QJsonDocument(obj));
+    }
 
 //    bool writeXML(const QDomDocument &doc);
 

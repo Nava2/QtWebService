@@ -105,6 +105,18 @@ bool QWebResponse::writeText(const QString text, const QString contentType) {
     return true;
 }
 
+bool QWebResponse::writeJson(const QJsonDocument doc) {
+    m_outFunc = [doc](ResponseError *error) -> QByteArray {
+        Q_UNUSED(error);
+
+        return doc.toJson(QJsonDocument::Indented);
+    };
+
+    m_headers["Content-Type"] = "application/json";
+
+    return true;
+}
+
 QWebResponse::ResponseError QWebResponse::writeToResponse(QSharedPointer<QWebRequest> req,
                                                           QHttpResponse *httpResponse) {
     if (!isValidResponse()) {

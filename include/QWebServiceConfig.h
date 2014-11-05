@@ -36,6 +36,13 @@
 
 #include "QWebService.h"
 
+/// @cond noDoc
+/// Simple wayt to define the type, while not typedefing it because we don't want to leak it
+#define ROUTE_MEM_FN( TYPENAME, VAR ) void (TYPENAME::* VAR )(QSharedPointer<QWebRequest>, QSharedPointer<QWebResponse>)
+
+#define ROUTE_FN( VAR ) QWebService::RouteFunction VAR
+/// @endcond noDoc
+
 /// Used to specify a QWebService's configuration
 class QTWEBSERVICE_API QWebServiceConfig {
 
@@ -125,28 +132,46 @@ public:
  * \define HTTP_METHOD convienience C Macro for defining the different HTTP
  * methods accepted.
  */
-#define HTTP_METHOD( name ) \
+#define HTTP_METHOD( VISIBILITY, NAME, KEYFUNC ) \
+    VISIBILITY : \
     template <typename T> \
     inline \
-    QWebServiceConfig & name (const QString path, T * handler) { \
-        return QWebServiceConfig:: name (Key::create(path, bindHandler(handler))); \
+    QWebServiceConfig & NAME (const QString path, T * handler) { \
+        return QWebServiceConfig:: NAME (Key::create(path, bindHandler(handler))); \
     } \
     \
     template <typename T> \
     inline \
-    QWebServiceConfig & name (const QRegularExpression &regRoute, T * handler) { \
-        return QWebServiceConfig:: name (Key::createRegex(regRoute, bindHandler(handler))); \
+    QWebServiceConfig & NAME (const QRegularExpression &regRoute, T * handler) { \
+        return QWebServiceConfig:: NAME (Key::createRegex(regRoute, bindHandler(handler))); \
     } \
     \
-    QWebServiceConfig & name (const QString path, QWebService::RouteFunction func) { \
-        return QWebServiceConfig:: name (Key::create(path, func)); \
+    template <class T> \
+    inline \
+    QWebServiceConfig & NAME (const QString path, T * that, ROUTE_MEM_FN(T, func) ) { \
+        return QWebServiceConfig:: NAME (Key::create(path, bindHandler(that, func))); \
     } \
     \
-    QWebServiceConfig & name (const QRegularExpression &regRoute, QWebService::RouteFunction func) { \
-        return QWebServiceConfig:: name (Key::createRegex(regRoute, func)); \
+    template <class T> \
+    inline \
+    QWebServiceConfig & NAME (const QRegularExpression &regRoute, T * that, ROUTE_MEM_FN(T, func) ) { \
+        return QWebServiceConfig:: NAME (Key::createRegex(regRoute, bindHandler(that, func))); \
     } \
     \
-    QWebServiceConfig & name ( const Key::Ptr key )
+    inline \
+    QWebServiceConfig & NAME (const QString path, ROUTE_FN( func ) ) { \
+        return QWebServiceConfig:: NAME (Key::create(path, func)); \
+    } \
+    \
+    inline \
+    QWebServiceConfig & NAME (const QRegularExpression &regRoute, ROUTE_FN( func )) { \
+        return QWebServiceConfig:: NAME (Key::createRegex(regRoute, func)); \
+    } \
+    \
+    private:\
+    QWebServiceConfig & NAME ( const Key::Ptr key ) { KEYFUNC } \
+    \
+    VISIBILITY :
 
     /*!
      * Installs a new route for all methods in %Config::validHttpMethods().
@@ -157,73 +182,73 @@ public:
      *      \ref QObject::setParent to `this` instance.
      * \return reference to `*this`.
      */
-    HTTP_METHOD( route ) {
+    HTTP_METHOD( public, route, {
         for (QWebService::HttpMethod method : validHttpMethods()) {
             addHandler(method, key);
         }
 
         return *this;
-    }
+    })
 
-        /*!
-        * Installs a new route with a handler for GET requests.
-        *
-        * \param route The http route to read, this will eventually be smart,
-        *      currently only uses static string matching
-        * \param handler A \ref QHttpRouteHandler instance which will be bound via
-        *      \ref QObject::setParent to `this` instance.
-        * \return reference to `*this`.
-        */
-    HTTP_METHOD( get ) {
+    /*!
+     * Installs a new route with a handler for GET requests.
+     *
+     * \param route The http route to read, this will eventually be smart,
+     *      currently only uses static string matching
+     * \param handler A \ref QHttpRouteHandler instance which will be bound via
+     *      \ref QObject::setParent to `this` instance.
+     * \return reference to `*this`.
+     */
+    HTTP_METHOD( public, get, {
         addHandler(QWebService::HttpMethod::HTTP_GET, key);
 
         return *this;
-    }
+    })
 
     /*!
-        * Installs a new route with a handler for POST requests.
-        *
-        * \param route The http route to read, this will eventually be smart,
-        *      currently only uses static string matching
-        * \param handler A \ref QHttpRouteHandler instance which will be bound via
-        *      \ref QObject::setParent to `this` instance.
-        * \return reference to `*this`.
-        */
-    HTTP_METHOD( post ) {
+     * Installs a new route with a handler for POST requests.
+     *
+     * \param route The http route to read, this will eventually be smart,
+     *      currently only uses static string matching
+     * \param handler A \ref QHttpRouteHandler instance which will be bound via
+     *      \ref QObject::setParent to `this` instance.
+     * \return reference to `*this`.
+     */
+    HTTP_METHOD( public, post, {
         addHandler(QWebService::HttpMethod::HTTP_POST, key);
 
         return *this;
-    }
+    })
 
     /*!
-        * Installs a new route with a handler for PUT requests.
-        *
-        * \param route The http route to read, this will eventually be smart,
-        *      currently only uses static string matching
-        * \param handler A \ref QHttpRouteHandler instance which will be bound via
-        *      \ref QObject::setParent to `this` instance.
-        * \return reference to `*this`.
-        */
-    HTTP_METHOD( put ) {
+     * Installs a new route with a handler for PUT requests.
+     *
+     * \param route The http route to read, this will eventually be smart,
+     *      currently only uses static string matching
+     * \param handler A \ref QHttpRouteHandler instance which will be bound via
+     *      \ref QObject::setParent to `this` instance.
+     * \return reference to `*this`.
+     */
+    HTTP_METHOD( public, put, {
         addHandler(QWebService::HttpMethod::HTTP_PUT, key);
 
         return *this;
-    }
+    })
 
     /*!
-        * Installs a new route with a handler for DELETE requests.
-        *
-        * \param route The http route to read, this will eventually be smart,
-        *      currently only uses static string matching
-        * \param handler A \ref QHttpRouteHandler instance which will be bound via
-        *      \ref QObject::setParent to `this` instance.
-        * \return reference to `*this`.
-        */
-    HTTP_METHOD( del ) {
+     * Installs a new route with a handler for DELETE requests.
+     *
+     * \param route The http route to read, this will eventually be smart,
+     *      currently only uses static string matching
+     * \param handler A \ref QHttpRouteHandler instance which will be bound via
+     *      \ref QObject::setParent to `this` instance.
+     * \return reference to `*this`.
+     */
+    HTTP_METHOD( public, del, {
         addHandler(QWebService::HttpMethod::HTTP_DELETE, key);
 
         return *this;
-    }
+    })
 
 #undef HTTP_METHOD
 
@@ -263,18 +288,14 @@ private:
     /**
      * Binds the handleRoute to a handler which is then passed through std::bind
      * creating a %std::function.
+     * @param handler The instance
+     * @param func Function pointer to a member function, if unspecified it'll `use operator ()`
      */
     template <class T> inline
-    QWebService::RouteFunction bindHandler(T *handler) {
-        // force it, this should be compiled away anyway in Opt.
-        const QObject *tmp = static_cast<const T *>(nullptr);
-        Q_UNUSED(tmp);
-
+    QWebService::RouteFunction bindHandler(T *handler, ROUTE_MEM_FN(T, func) = &T::operator ()) {
         using namespace std::placeholders;
 
-        m_specialHandlers.insert(handler);
-
-        return std::bind(&T::operator (), handler, _1, _2);
+        return std::bind(func, handler, _1, _2);
     }
 
     /**
@@ -298,6 +319,9 @@ private:
     const QWebRouteFactory * const m_factory;
 
 };
+
+#undef ROUTE_MEM_FN
+#undef ROUTE_FN
 
 inline
 uint qHash(const QWebServiceConfig::Key &key) {
