@@ -23,7 +23,7 @@
 #ifndef TEMPLATEPARSER_H
 #define TEMPLATEPARSER_H
 
-#include "private/qtwebserviceapi.h"
+
 #include "private/qtwebservicefwd.h"
 
 #include "QWebMiddleWare.h"

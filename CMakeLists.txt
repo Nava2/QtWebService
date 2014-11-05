@@ -11,6 +11,10 @@ IF (NOT CMAKE_BUILD_TYPE)
     message(STATUS "Setting CMAKE_BUILD_TYPE to: DEBUG")
 ENDIF()
 
+IF( ${CMAKE_BUILD_TYPE} MATCHES "^DEBUG$" )
+    SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall" )
+ENDIF()
+
 IF(MINGW)
     SET(CMAKE_CXX_FLAGS "-std=gnu++0x ${CMAKE_CXX_FLAGS}")
     SET(BUILD_CHAIN "mingw")
@@ -49,7 +53,7 @@ find_package(Qt5Xml REQUIRED)
 
 find_package(QHttpServer REQUIRED)
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DQTWEBAPPLICATION_EXPORT")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DQTWEBSERVICE_EXPORT")
 
 SET(QtWebService_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib/")
 SET(QtWebService_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/")
@@ -90,7 +94,7 @@ SET( QtWebService_PUBLIC_HEADER
 
 SET( QtWebService_PRIVATE_HEADER
 
-    include/private/qtwebserviceapi.h
+#    include/private/qtwebserviceapi.h
     include/private/qtwebservicefwd.h
 )
 

@@ -77,6 +77,8 @@ QWebService* QWebServiceConfig::build(QObject* parent) const
     auto router = new QWebRouter(handlerTable, fourohfour);
 
     auto server = new QHttpServer();
+    QObject::connect(server, &QHttpServer::newRequest, router, &QWebRouter::handleRoute );
+
     auto service = new QWebService(server, router, parent);
     router->setWebService(service);
 

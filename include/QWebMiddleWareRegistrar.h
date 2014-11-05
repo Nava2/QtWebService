@@ -23,7 +23,7 @@
 #ifndef QMIDDLEWAREREGISTRAR_H
 #define QMIDDLEWAREREGISTRAR_H
 
-#include "private/qtwebserviceapi.h"
+
 #include "private/qtwebservicefwd.h"
 
 #include "QWebMiddleWare.h"

@@ -23,8 +23,8 @@
 #ifndef QWEBRESPONSE_H
 #define QWEBRESPONSE_H
 
-#include "private/qtwebserviceapi.h"
-#include "private/qtwebservicefwd.h"
+
+#include "../private/qtwebservicefwd.h"
 
 #include <functional>
 

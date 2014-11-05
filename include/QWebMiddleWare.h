@@ -24,7 +24,7 @@
 #ifndef Q_WEB_MIDDLE_WARE_H
 #define Q_WEB_MIDDLE_WARE_H
 
-#include "private/qtwebserviceapi.h"
+
 #include "private/qtwebservicefwd.h"
 
 #include "QWebMiddleWareRegistrar.h"

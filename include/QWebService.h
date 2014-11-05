@@ -28,17 +28,20 @@
 #include <QSharedPointer>
 #include <QSet>
 #include <QDebug>
+#include <QHostAddress>
 #include <QHttpServer/qhttpserver.h>
 #include <QHttpServer/qhttpresponse.h>
 #include <QHttpServer/qhttprequest.h>
 #include <functional>
 
-#include "private/qtwebserviceapi.h"
+
 #include "private/qtwebservicefwd.h"
 
 #include "QWebMiddleWare.h"
 
 class QTWEBSERVICE_API QWebService : public QObject {
+
+    Q_OBJECT
 
     /// @cond nodoc
     friend class QWebServiceConfig;
@@ -67,19 +70,30 @@ public:
         return &m_registrar;
     }
 
+    /**
+     * @brief startService Starts the service on the passed addresses
+     * @param address
+     * @param port
+     * @return True if successful.
+     */
+    bool startService(const QHostAddress &address = QHostAddress::Any, quint16 port = 80);
+
+    /**
+     * @brief stopService Tries to stop the service
+     */
+    void stopService();
+
 signals:
 
     /**
      * @brief start Emitted when the service starts
      */
-    void start();
+    void start(const QHostAddress address, quint16 port);
 
     /**
      * @brief stop Emitted when the service stops
      */
     void stop();
-
-
 
 
 private:

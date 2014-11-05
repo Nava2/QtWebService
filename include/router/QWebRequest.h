@@ -33,8 +33,8 @@
 
 #include <QHttpServer/qhttprequest.h>
 
-#include "private/qtwebserviceapi.h"
-#include "private/qtwebservicefwd.h"
+
+#include "../private/qtwebservicefwd.h"
 
 class QTWEBSERVICE_API QWebRequest : public QObject
 {
@@ -101,6 +101,15 @@ public:
     inline
     const QUrl &url() {
         return m_req->url();
+    }
+
+    /**
+     * @brief body return the body content
+     * @return QString of the body content
+     */
+    inline
+    const QString body() {
+        return m_req->body();
     }
 
     inline

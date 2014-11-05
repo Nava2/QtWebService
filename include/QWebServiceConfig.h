@@ -31,7 +31,7 @@
 
 #include <functional>
 
-#include "private/qtwebserviceapi.h"
+
 #include "private/qtwebservicefwd.h"
 
 #include "QWebService.h"

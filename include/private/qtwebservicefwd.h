@@ -15,6 +15,13 @@ class QWebRouteFactory;
 class QWebRequest;
 class QWebResponse;
 
+// Define to export or import depending if we are building or using the library.
+// QTWEBAPPLICATION_EXPORT should only be defined when building.
+#if defined(QTWEBSERVICE_EXPORT)
+#define QTWEBSERVICE_API Q_DECL_EXPORT
+#else
+#define QTWEBSERVICE_API Q_DECL_IMPORT
+#endif
 
 
 #endif // QTWEBSERVICEFWD_H

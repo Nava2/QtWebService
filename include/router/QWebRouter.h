@@ -24,8 +24,8 @@
 #ifndef QHTTPROUTER_H
 #define QHTTPROUTER_H
 
-#include "private/qtwebserviceapi.h"
-#include "private/qtwebservicefwd.h"
+
+#include "../private/qtwebservicefwd.h"
 
 #include "QWebService.h"
 

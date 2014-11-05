@@ -32,8 +32,8 @@
 #include <QHash>
 #include <QMutex>
 
-#include "private/qtwebserviceapi.h"
-#include "private/qtwebservicefwd.h"
+
+#include "../private/qtwebservicefwd.h"
 
 class QTWEBSERVICE_API QWebRoute {
 
