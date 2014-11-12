@@ -32,6 +32,6 @@ target_link_libraries(qwebservice-test
         Qt5::Network 
         Qt5::Core 
         Qt5::Test
-        qhttpserver
+        ${QHTTPSERVER_LIBRARIES}
         QtWebService
 )
