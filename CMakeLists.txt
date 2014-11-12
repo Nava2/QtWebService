@@ -52,6 +52,7 @@ find_package(Qt5Network REQUIRED)
 find_package(Qt5Xml REQUIRED)
 
 find_package(QHttpServer REQUIRED)
+include_directories(${QHTTPSERVER_INCLUDE_DIRS})
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DQTWEBSERVICE_EXPORT")
 
@@ -120,7 +121,7 @@ target_link_libraries(QtWebService
         Qt5::Core
         Qt5::Xml
 
-        qhttpserver
+        ${QHTTPSERVER_LIBRARIES}
     )
 
 # configure:
