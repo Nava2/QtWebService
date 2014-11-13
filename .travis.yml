@@ -28,7 +28,7 @@ install:
 
 script:
   - mkdir build/ && cd build/
-  - cmake ..
+  - cmake -DCMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH:/usr/local" ..
   - make all
   - sudo make install
 
