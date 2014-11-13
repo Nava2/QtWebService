@@ -134,17 +134,6 @@ public:
  */
 #define HTTP_METHOD( VISIBILITY, NAME, KEYFUNC ) \
     VISIBILITY : \
-    template <typename T> \
-    inline \
-    QWebServiceConfig & NAME (const QString path, T * handler) { \
-        return QWebServiceConfig:: NAME (Key::create(path, bindHandler(handler))); \
-    } \
-    \
-    template <typename T> \
-    inline \
-    QWebServiceConfig & NAME (const QRegularExpression &regRoute, T * handler) { \
-        return QWebServiceConfig:: NAME (Key::createRegex(regRoute, bindHandler(handler))); \
-    } \
     \
     template <class T> \
     inline \
@@ -182,13 +171,13 @@ public:
      *      \ref QObject::setParent to `this` instance.
      * \return reference to `*this`.
      */
-    HTTP_METHOD( public, route, {
+    HTTP_METHOD( public, route,
         for (QWebService::HttpMethod method : validHttpMethods()) {
             addHandler(method, key);
         }
 
         return *this;
-    })
+    )
 
     /*!
      * Installs a new route with a handler for GET requests.
