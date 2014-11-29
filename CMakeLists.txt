@@ -35,6 +35,7 @@ ELSEIF(UNIX)
     ENDIF()
 ENDIF()
 
+message(STATUS "Module path: ${CMAKE_MODULE_PATH}")
 message(STATUS "Found build chain: ${BUILD_CHAIN}")
 
 SET(INCLUDE_OUTPUT_DIR "${CMAKE_BINARY_DIR}/include")
@@ -120,7 +121,7 @@ target_link_libraries(QtWebService
         Qt5::Core
         Qt5::Xml
 
-        qhttpserver
+        QHttpServer
     )
 
 # configure:
