@@ -17,14 +17,11 @@ install:
   - echo "Installing qhttpserver"
   - git clone --depth=10 https://github.com/Nava2/qhttpserver.git ~/qhttpserver
   - pushd ~/qhttpserver
-  - mkdir build && pushd ./build
+  - mkdir ~/qhttpserver/build && pushd ~/qhttpserver/build
   - cmake ..
   - sudo make -j2 all && sudo make install
-  - ls /usr/local/share/QHttpServer
-  - ls /usr/local/lib | grep qhttp
   - echo "Finished installing qhttpserver"
-  - popd && popd
-  - pwd
+  - popd 
 
 script:
   - mkdir build/ && cd build/
