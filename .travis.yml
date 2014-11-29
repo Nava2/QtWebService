@@ -16,7 +16,6 @@ install:
   - $CXX -v
   - echo "Installing qhttpserver"
   - git clone --depth=10 https://github.com/Nava2/qhttpserver.git ~/qhttpserver
-  - pushd ~/qhttpserver
   - mkdir ~/qhttpserver/build && pushd ~/qhttpserver/build
   - cmake ..
   - sudo make -j2 all && sudo make install
