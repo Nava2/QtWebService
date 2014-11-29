@@ -129,10 +129,10 @@ SET(BINARY_SHARE_PATH "${CMAKE_CURRENT_BINARY_DIR}/share")
 SET(INSTALL_SHARE_PATH "share/${QtWebService_LIB_NAME}")
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/share/CMakeConfig.cmake"
-    "${BINARY_SHARE_PATH}/${QtWebService_CMAKE_CONFIG}" )
+    "${BINARY_SHARE_PATH}/${QtWebService_CMAKE_CONFIG}" @ONLY )
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/share/libpkgconfig.pc"
-    "${BINARY_SHARE_PATH}/${QtWebService_PC_CONFIG}" )
+    "${BINARY_SHARE_PATH}/${QtWebService_PC_CONFIG}" @ONLY )
 
 install(
     FILES
