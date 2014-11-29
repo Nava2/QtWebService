@@ -7,6 +7,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/)
 
 find_package(Qt5Test REQUIRED)
 
+find_package(QHttpServer REQUIRED)
+
 SET( QtWebService_testsrcs
 #    qhttproutepathtest.cpp
     QWebRouteTest.cpp
@@ -24,7 +26,7 @@ add_dependencies(qwebservice-test
         QtWebService
     )
 
-LINK_LIBRARIES(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+LINK_LIBRARIES(${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${QHTTPSERVER_LIBRARIES})
 
 target_link_libraries(qwebservice-test
         
@@ -32,6 +34,6 @@ target_link_libraries(qwebservice-test
         Qt5::Network 
         Qt5::Core 
         Qt5::Test
-        qhttpserver
+        QHttpServer
         QtWebService
 )
