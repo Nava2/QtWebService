@@ -52,6 +52,8 @@ find_package(Qt5Core REQUIRED)
 find_package(Qt5Network REQUIRED)
 find_package(Qt5Xml REQUIRED)
 
+message(STATUS "Found Qt version = ${Qt5Core_VERSION_STRING}")
+
 find_package(QHttpServer REQUIRED)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DQTWEBSERVICE_EXPORT")
@@ -72,25 +74,17 @@ SET( QtWebService_SRCS
     #router:
     lib/router/QWebRouter.cpp
     lib/router/QWebRoute.cpp
-
-    lib/middleware/TemplateParser.cpp
-    lib/QWebMiddleWareRegistrar.cpp
 )
 
 SET( QtWebService_PUBLIC_HEADER
     include/QWebService.h
     include/QWebServiceConfig.h
 
-    include/QWebMiddleWare.h
-    include/QWebMiddleWareRegistrar.h
-
     include/router/QWebRequest.h
     include/router/QWebResponse.h
 
     include/router/QWebRouter.h
     include/router/QWebRoute.h
-
-    include/middleware/TemplateParser.h
 )
 
 SET( QtWebService_PRIVATE_HEADER
@@ -150,21 +144,5 @@ install(TARGETS QtWebService
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
         DESTINATION "include/${QtWebService_LIB_NAME}"
         FILES_MATCHING REGEX ".*\\.h(pp)?$" )
-
-#foreach(header ${QtWebService_PUBLIC_HEADER})
-#    get_filename_component( fname ${header} NAME )
-#    get_filename_component( noExt ${header} NAME_WE )
-#    get_filename_component( dir ${header} DIRECTORY )
-#    string(TOLOWER ${fname} realName )
-
-#    file( WRITE ${CMAKE_BINARY_DIR}/${header} ${text} )
-#    file( WRITE ${CMAKE_BINARY_DIR}/${dir}/${noExt} ${text} )
-#    add_custom_command(OUTPUT
-#                ${CMAKE_BINARY_DIR}/${dir}/${realName}
-#        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/${header}
-#                ${CMAKE_BINARY_DIR}/${dir}/${realName}
-#        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${header} )
-
-#endforeach(header)
 
 add_subdirectory(test)

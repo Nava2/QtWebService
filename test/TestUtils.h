@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 kevin
+ * Copyright 2014 Kevin Brightwell <kevin.brightwell2@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -20,36 +20,42 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef TEMPLATEPARSER_H
-#define TEMPLATEPARSER_H
+#ifndef TESTUTILS_H
+#define TESTUTILS_H
 
+#include <QTimer>
+#include <QEventLoop>
+#include <QObject>
 
-#include "private/qtwebservicefwd.h"
+#include "catch/catch.hpp"
 
-#include "QWebMiddleWare.h"
-#include "QWebService.h"
-#include "router/QWebRequest.h"
+/**
+ * @file Useful test harnesses and utilities, this file should include all others.
+ */
 
-class TemplateParser : public QWebMiddleWare
+namespace testUtils {
+
+/**
+ * Spins until either `msec` milliseconds pass or the `callback` signal fires, if it times out, the test will fail.
+ */
+template <class T, typename F>
+void spinUntil(T * obj, F callback, const int msec = 400)
 {
-public:
-    TemplateParser(QObject *parent = nullptr);
+    //Spin until we get the reply or timeout
+    QEventLoop eLoop;
 
-    /**
-     * @brief ~QWebMiddleWare No-operation destructor specified for inheritance concerns.
-     */
-    virtual
-    ~TemplateParser() { }
+    QTimer timer;
+    bool timeOutFail = false;
+    QObject::connect(&timer, &QTimer::timeout, [&](){ timeOutFail = true; eLoop.quit(); });
 
-    virtual
-    void configure(RegistrarEntry * const entry) {
-        connect(entry, &QWebMiddleWareRegistrar::Entry::webResponseDataPrepared,
-                this, &TemplateParser::myFunc);
-    }
+    timer.start(msec);
+    QObject::connect(obj, callback, &eLoop, &QEventLoop::quit);
+    eLoop.exec();
 
-    bool myFunc(QSharedPointer<QWebRequest> req, QByteArray in, QSharedPointer<QByteArray> &out) {
-        return false;
-    }
-};
+    // if the timer is still active, it timed out, thus the test failed.
+    REQUIRE(!timeOutFail);
+}
 
-#endif // TEMPLATEPARSER_H
+} // end namespace testUtils
+
+#endif // TESTUTILS_H
