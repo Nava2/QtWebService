@@ -31,19 +31,20 @@ SCENARIO( "A simple service is configured and used", "[QWebService]" ) {
         {
             REQUIRE(req);
             REQUIRE(resp);
+
             QJsonObject result;
             result.insert(QString("hello"),QString("world"));
             resp->setStatusCode(QWebResponse::StatusCode::STATUS_OK);
-            resp->writeJson(QJsonDocument(result));
+            resp->writeJson(result);
         };
 
         QSharedPointer<QWebService> service = QSharedPointer<QWebService> (QWebServiceConfig()
-                .get ("hello", response)
+                .get("/hello", response)
                 .build());
 
-        service->startService(QHostAddress::LocalHost, 8080);
-
         REQUIRE(service);
+
+        service->startService(QHostAddress::LocalHost, 8080);
 
         WHEN( "We try to call the path hello" )
         {

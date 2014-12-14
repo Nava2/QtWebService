@@ -9,7 +9,7 @@ QWebService::QWebService(QHttpServer *server, QWebRouter *router, QObject *paren
 }
 
 QWebService::~QWebService() {
-
+    m_server->close();
 }
 
 bool QWebService::startService(const QHostAddress &address, quint16 port) {
