@@ -6,14 +6,22 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QEventLoop>
+#include <QJsonObject>
 #include <QUrl>
 #include <string>
 #include <QWebServiceConfig.h>
 #include "router/QWebRequest.h"
 #include "router/QWebResponse.h"
 
+void spin(const QNetworkAccessManager& manager)
+{
+    //Spin until we get the reply
+    QEventLoop eLoop;
+    QObject::connect(&manager, SIGNAL( finished( QNetworkReply * ) ), &eLoop, SLOT(quit()));
+    eLoop.exec();
+}
 
-SCENARIO( "A simple service is configured and used", "[QWebRouter]" ) {
+SCENARIO( "A simple service is configured and used", "[QWebService]" ) {
 
     GIVEN( "A network manager" )
     {
@@ -23,6 +31,10 @@ SCENARIO( "A simple service is configured and used", "[QWebRouter]" ) {
         {
             REQUIRE(req);
             REQUIRE(resp);
+            QJsonObject result;
+            result.insert(QString("hello"),QString("world"));
+            resp->setStatusCode(QWebResponse::StatusCode::STATUS_OK);
+            resp->writeJson(QJsonDocument(result));
         };
 
         QSharedPointer<QWebService> service = QSharedPointer<QWebService> (QWebServiceConfig()
@@ -41,10 +53,7 @@ SCENARIO( "A simple service is configured and used", "[QWebRouter]" ) {
             //Post the request
             QNetworkReply* reply = manager.get(request);
 
-            //Spin until we get the reply
-            QEventLoop eLoop;
-            QObject::connect(&manager, SIGNAL( finished( QNetworkReply * ) ), &eLoop, SLOT(quit()));
-            eLoop.exec();
+            spin(manager);
 
             REQUIRE(reply);
         }
