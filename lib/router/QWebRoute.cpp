@@ -210,8 +210,6 @@ QString compilePathSyntax(const QString &path, QWebRouteFactory::CreationError *
             groupStarted = true;
         }
 
-        qDebug() << "captured = " << match.capturedTexts();
-
         QString spec1 = match.captured("specOne");
         if (spec1.isNull()) {
             // was not specificed.. i.e. we need to default
@@ -324,7 +322,7 @@ QWebRoute::Ptr QWebRouteFactory::create(const QString &route) const {
         return QWebRoute::Ptr();
     }
 
-    qDebug() << "Parsed: '" << route << "' -> '" << re.pattern() << '\'';
+//    qDebug() << "Parsed: '" << route << "' -> '" << re.pattern() << '\'';
 
     clearError();
     return QWebRoute::Ptr(new QWebRoute_Regex(re));
