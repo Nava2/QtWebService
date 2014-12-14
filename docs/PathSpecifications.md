@@ -13,15 +13,26 @@ All examples are presented in the QtWebService route language followed by the re
 are represented in the Regex representations by `\U` which is not a valid escape character (substitute `\U` for 
 `[\w\d\-_]`).
 
+Description     | Qt Web Syntax     | Regex Equivalent  | Matches
+----------------|-------------------|-------------------|----------------------
+Root Directory  | `/`               | `/`               | `/`
+Multiple levels | `/foo/bar`        | `/foo/bar`        | `/foo/bar`
+
+
 * Root Directory
 
     *QtWS:* `/` 
+
     *Regex:* `/`
+
+    *Matches:* `/`
     
 * Levels 
     
     *QtWS:* `/foo/bar`
+    
     *Regex:* `/foo/bar`
+
     
     This only matches the two mentioned levels, i.e. `/foo/bar`. 
 
@@ -30,46 +41,29 @@ are represented in the Regex representations by `\U` which is not a valid escape
     *QtWS:* `/foo|bar|baz`
     *Regex:* `/(?:foo|bar|baz)`
 
-## Wildcards
+## Per-level syntax
 
-Wildcards only match the following: alphanumerics, `-` and `_`. No other characters match, this is represented in Regex 
-by: `[\w\d\-_]` and within the guide, we will use `\U` to represent the previous regex. 
-    
-* Constant prefix: 
+All per-level syntax components can be composed to create a multiple level 
+path. Each of the following examples are for a single level, multiple level examples are shown later. 
 
-    *QtWS:* `/foo*`
-    *Regex:* `/foo\U*`
+Description     | Qt Web Syntax     | Regex Equivalent  | Matches
+----------------|-------------------|-------------------|----------------------
+Multiple exact names | `/foo|bar|baz` | `/(?:foo|bar|baz)` | `/foo`, `/bar`, `/baz`
+Match any character, one or more wide   | `/+` | `/(\U+)` | `/A`, `/BB`, `/CCC`, etc.
+Match any character, zero or more wide  | `/*` | `/(\U*)` | `/`, `/a`, `/bb`, ...
+Constant prefix | `/foo+`           | `/(foo\U+)`       | `/foo1`, `/foo2`, `/fooA`, ...
+Constant optional suffix, optional start | `/*bar` | `/(\U*bar)` | `/foobar`, `/bar`, `/a-bar`, ...
 
-* Constant suffix:
+**Note:** It is poor practice to use `*` as the only character in a match statement because it will match the previous path. It will lead to some frustrating bugs in your code. It is however useful for prefixes and suffixes. 
 
-    *QtWS:* `/*oof`
-    *Regex:* `/\U*oof`
-    
-    This will match `/oof` and `/baroof` just the same.
+### Names and Grouping
 
-* Constant prefix and suffix:
+Qt Web Syntax supports usage of names and grouping. Names are specified with the following syntax: `:name[$specification]`. The name may be any alphanumeric character, `-`, or `_`. These names are case sensitive and must not be repeated within a path specification. The `[$specification]` component is optional, it will default to `+` if unspecified -- implying one or more valid characters. The specification rules allow for all specifications used in a non-named level. 
 
-    *QtWS:* `/foo*bar`
-    *Regex:* `/foo\U*bar`
-    
-* Wildcards and OR
-    
-    *QtWS:* `/foo*|a+bar`
-    *Regex:* `/(?:foo\U*|a\U+bar)/`
+Additionally, if a name is not specified and a Wildcard is used, the entire level will be captured in a "splat" which is an unamed group. Accute readers will note that in the [Per-level Syntax] section, the examples had Regex groups implied, these behaviours show the result of the wildcard usage. 
 
-## Variables
-
-All levels in a path may store a single variable. 
-
-* Named variable for multiple options
-    
-    *QtWS:* `/:name$foo|bar`
-    *Regex:* `/(?<name>foo|bar)/`
-    
-    In the Routed Response, the variable "name" can be accessed from the dictionary and will contain one of the two values specified. 
-    
-* Named variable with wildcards
-
-    *QtWS:* `/:name$foo*|bar+`
-    *Regex:* `/(?<name>foo\U*|bar\U+)/`
-    
+Description     | Qt Web Syntax     | Regex Equivalent  | Matches
+----------------|-------------------|-------------------|----------------------
+Name with default spec. | `/:name` | `/(?<name>\U+)` | `/foo` with `{"name" : "foo"}`, `/bar` with `{"name" : "bar"}`
+Name with simple spec. | `/:name$foo` | `/(?<name>foo)` | `/foo` with `{"name" : "foo"}`
+Name with OR + Wildcard | `/:name$*foo|bar+` | `/(?<name>\U*foo|bar\U+)` | `/foo` with `{"name" : "foo"}`, `/barA` with `{"name" : "barA"}`
