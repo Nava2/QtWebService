@@ -30,7 +30,8 @@
 #include <QSharedPointer>
 #include <QList>
 #include <QHash>
-#include <QMutex>
+#include <QReadWriteLock>
+#include <QDebug>
 
 
 #include "../private/qtwebservicefwd.h"
@@ -76,7 +77,7 @@ public:
         }
 
         /**
-         * @brief groups All captures in a route.
+         * @brief groups All captures in a route, including splats
          * @return
          */
         inline
@@ -134,7 +135,7 @@ public:
      * \returns Valid pointer if found, caller must delete pointer
      */
     virtual
-    ParsedRoute::Ptr const checkPath(const QString path, const QStringList &sepPath) = 0;
+    ParsedRoute::Ptr const checkPath(const QString &path) = 0;
     
 protected:
 
@@ -157,6 +158,7 @@ public:
         NO_ERROR = 0,
         PATH_PART_ERROR,
         ROOT_MISSING,
+        SLASH_TERMINATOR,
         INVALID_REGEX_PRODUCED
     };
 
@@ -177,11 +179,15 @@ public:
 
     QWebRoute::Ptr createRegex(const QString &comp) const;
 
-    const CreationError lastError() const{
+    const CreationError lastError() const {
+        QReadLocker lock(&m_errorMutex);
+        
         return m_lastError;
     }
 
-    const QString lastErrorMessage() const{
+    const QString lastErrorMessage() const {
+        QReadLocker lock(&m_errorMutex);
+        
         return m_lastErrorMsg;
     }
 
@@ -189,25 +195,23 @@ private:
 
     inline
     void setError(CreationError err, const QString message) const {
-        m_errorMutex.lock();
+        QWriteLocker lock(&m_errorMutex);
 
         m_lastError = err;
         m_lastErrorMsg = message;
 
-        m_errorMutex.unlock();
+//        qDebug() << "Error set:" << message;
     }
 
     inline
     void clearError() const {
-        m_errorMutex.lock();
+        QWriteLocker lock(&m_errorMutex);
 
         m_lastError = CreationError::NO_ERROR;
         m_lastErrorMsg.clear();
-
-        m_errorMutex.unlock();
     }
 
-    mutable QMutex m_errorMutex;
+    mutable QReadWriteLock m_errorMutex;
     mutable CreationError m_lastError;
     mutable QString m_lastErrorMsg;
 

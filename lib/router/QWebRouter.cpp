@@ -97,9 +97,7 @@ void QWebRouter::handleRoute(QHttpRequest* request, QHttpResponse* resp)
     }
 
     // we recieved a request:
-    const QStringList sepPath = route.split('/', QString::SkipEmptyParts);
-
-    QSharedPointer<QWebRoute::ParsedRoute> routeResponse;
+    QWebRoute::ParsedRoute::Ptr routeResponse;
     QWebRouter::RouteFunction func;
     
     QWebService::HttpMethod method = request->method();
@@ -107,7 +105,7 @@ void QWebRouter::handleRoute(QHttpRequest* request, QHttpResponse* resp)
   
     // search for the first matching path
     for (RoutePair pair : routes) {
-        QSharedPointer<QWebRoute::ParsedRoute> resp = pair.first->checkPath(route, sepPath);
+        QSharedPointer<QWebRoute::ParsedRoute> resp = pair.first->checkPath(route);
         if (resp) {
             func = pair.second;
             routeResponse = resp;
