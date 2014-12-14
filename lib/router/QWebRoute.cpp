@@ -215,6 +215,8 @@ QString convertPathSyntax(const QString &path, QWebRouteFactory::CreationError *
             // skip two because first is whole match, second is name (which
             // may or may not be present)
             const QStringList OROpts = match.capturedTexts().mid(2);
+            
+            qDebug() << "captured = " << match.capturedTexts();
 
             static const QRegularExpression GROUP_REQ("(?:[^\\\\][\\*\\+]|^[\\*\\+])");
             // check if we need to create a non-capturing group because of
