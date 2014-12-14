@@ -38,7 +38,7 @@ SCENARIO( "A simple service is configured and used", "[QWebService]" ) {
         };
 
         QSharedPointer<QWebService> service = QSharedPointer<QWebService> (QWebServiceConfig()
-                .get ("hello", response)
+                .get ("/hello", response)
                 .build());
 
         service->startService(QHostAddress::LocalHost, 8080);
