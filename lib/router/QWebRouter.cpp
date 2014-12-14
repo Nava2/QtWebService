@@ -105,12 +105,14 @@ void QWebRouter::handleRoute(QHttpRequest* request, QHttpResponse* resp)
   
     // search for the first matching path
     for (RoutePair pair : routes) {
-        QSharedPointer<QWebRoute::ParsedRoute> resp = pair.first->checkPath(route);
-        if (resp) {
-            func = pair.second;
-            routeResponse = resp;
+        if(pair.first) {
+            QSharedPointer<QWebRoute::ParsedRoute> resp = pair.first->checkPath(route);
+            if (resp) {
+                func = pair.second;
+                routeResponse = resp;
 
-            break;
+                break;
+            }
         }
     }
 
@@ -126,8 +128,8 @@ void QWebRouter::handleRoute(QHttpRequest* request, QHttpResponse* resp)
 
     QSharedPointer<QWebResponse> webRespPtr = QWebResponse::create();
 
-    connect(webRespPtr.data(), &QWebResponse::responseDataPrepared,
-            m_service->getMiddleWareRegistrar(), &QWebMiddleWareRegistrar::webResponseDataPrepared);
+    //connect(webRespPtr.data(), &QWebResponse::responseDataPrepared,
+    //        m_service->getMiddleWareRegistrar(), &QWebMiddleWareRegistrar::webResponseDataPrepared);
 
     connect(request, &QHttpRequest::end, [this, func, reqPtr, resp, webRespPtr]() {
         if (func) {

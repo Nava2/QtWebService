@@ -10,15 +10,25 @@
 #include <QUrl>
 #include <string>
 #include <QWebServiceConfig.h>
+#include <QTimer>
 #include "router/QWebRequest.h"
 #include "router/QWebResponse.h"
 
-void spin(const QNetworkAccessManager& manager)
+template <class T, typename F>
+void spin(T * obj, F callback, const int msec = 400)
 {
-    //Spin until we get the reply
+    //Spin until we get the reply or timeout
     QEventLoop eLoop;
-    QObject::connect(&manager, SIGNAL( finished( QNetworkReply * ) ), &eLoop, SLOT(quit()));
+
+    QTimer timer;
+    bool timeOut = false;
+    QObject::connect(&timer, &QTimer::timeout, [&](){ timeOut = true; eLoop.quit(); } );
+
+    timer.start(msec);
+    QObject::connect(obj, callback, &eLoop, &QEventLoop::quit);
     eLoop.exec();
+
+    REQUIRE(!timeOut);
 }
 
 SCENARIO( "A simple service is configured and used", "[QWebService]" ) {
@@ -54,7 +64,7 @@ SCENARIO( "A simple service is configured and used", "[QWebService]" ) {
             //Post the request
             QNetworkReply* reply = manager.get(request);
 
-            spin(manager);
+            spin(&manager, &QNetworkAccessManager::finished, 400);
 
             REQUIRE(reply);
         }
