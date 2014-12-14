@@ -199,6 +199,8 @@ private:
 
         m_lastError = err;
         m_lastErrorMsg = message;
+
+        qDebug() << "Error set:" << message;
     }
 
     inline

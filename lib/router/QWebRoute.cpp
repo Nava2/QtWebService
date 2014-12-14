@@ -134,7 +134,7 @@ const QString VALID_NAME_CHARS("[\\w\\d\\-_]");
  */
 static
 const QRegularExpression RE_PATH("^(?::(?<name>" % VALID_NAME_CHARS % "+)\\$?)?" %
-                                 "(?:(" % VALID_OPT_CHARS % "+)(?:\\|(" % VALID_OPT_CHARS % "+))*)?$");
+                                 "(?:(?<specOne>" % VALID_OPT_CHARS % "+)(?<extraSpec>(?:\\|" % VALID_OPT_CHARS % "+)+)?)?$");
 
 /**
  * Replace needle with `with` within haystack. 
@@ -155,6 +155,8 @@ QString replaceRE(const QRegularExpression &needle, const QString &haystack, con
     
     return out;
 }
+
+static const QString DEFAULT_PATH_SPECIFICATION = "+";
 
 static
 QString convertPathSyntax(const QString &path, QWebRouteFactory::CreationError * const error) {
@@ -181,13 +183,13 @@ QString convertPathSyntax(const QString &path, QWebRouteFactory::CreationError *
 
     QStringList badParts;
 
-    for (QString part : pathParts) {
-        QRegularExpressionMatch match = RE_PATH.match(part, 0,
+    for (QString level : pathParts) {
+        QRegularExpressionMatch match = RE_PATH.match(level, 0,
                                                       QRE::PartialPreferCompleteMatch,
                                                       QRE::AnchoredMatchOption);
 
         if (!match.hasMatch()) {
-            badParts += part;
+            badParts += level;
         }
 
         if (badParts.size() > 0) {
@@ -197,7 +199,7 @@ QString convertPathSyntax(const QString &path, QWebRouteFactory::CreationError *
         }
 
         QString buff;
-        buff.reserve(part.size() * 2);
+        buff.reserve(level.size() * 2);
 
         bool groupStarted = false; // true when we started a RegEx group
 
@@ -209,57 +211,78 @@ QString convertPathSyntax(const QString &path, QWebRouteFactory::CreationError *
             groupStarted = true;
         }
 
-        if (match.capturedTexts().size() > 2) {
-            // create a regex OR
+        qDebug() << "captured = " << match.capturedTexts();
 
-            // skip two because first is whole match, second is name (which
-            // may or may not be present)
-            const QStringList OROpts = match.capturedTexts().mid(2);
-            
-            qDebug() << "captured = " << match.capturedTexts();
-
-            static const QRegularExpression GROUP_REQ("(?:[^\\\\][\\*\\+]|^[\\*\\+])");
-            // check if we need to create a non-capturing group because of
-            // multiple options that are valid.
-            if (!groupStarted) {
-                if (GROUP_REQ.match(part).hasMatch()) {
-                    buff += "(";
-                    groupStarted = true;
-                } else if (OROpts.size() > 1) {
-                    buff += "(?:";
-                    groupStarted = true;
-                }
-            } 
-            
-            static const QRegularExpression WILDCARD_STAR_GT2("\\*{2,}");
-            static const QRegularExpression WILDCARD_PLUS_GT2("\\+{2,}");
-
-            // for the OR options, replace wild cards if needed
-            for (QString opt : OROpts) {
-                opt = opt.replace('.', "\\.");
-                
-                opt = replaceRE(WILDCARD_STAR_GT2, opt, "*");
-                opt = replaceRE(WILDCARD_PLUS_GT2, opt, "+");
-                
-                opt = replaceRE(WILDCARD_STAR, opt, VALID_NAME_CHARS % '*');
-                if (opt.startsWith('*')) {
-                    opt = opt.replace(0, 1, VALID_NAME_CHARS % '*');
-                }
-                
-                opt = replaceRE(WILDCARD_PLUS, opt, VALID_NAME_CHARS % '+');
-                if (opt.startsWith('+')) {
-                    opt = opt.replace(0, 1, VALID_NAME_CHARS % '+');
-                }
-       
-                buff += opt % '|';
-            }
-
-            // take off the last |
-            buff.chop(1);
-        } else {
-            // there was no char placed, need to insert a wildcard:
-            buff += VALID_NAME_CHARS % "+";
+        QString spec1 = match.captured("specOne");
+        if (spec1.isNull()) {
+            // was not specificed.. i.e. we need to default
+            spec1 = DEFAULT_PATH_SPECIFICATION;
         }
+
+        // handle multiple specifications i.e. OR
+        QString extraSpecs = match.captured("extraSpec");
+
+        static const QRegularExpression GROUPING_REQUIRED("[\\*\\+]");
+
+        // we will parse everything by iterating over a list, even if there is only one specification to care about,
+        // just a single iteration next to no overhead for an easier maintaining
+        QStringList specs;
+        specs += spec1;
+
+        if (!extraSpecs.isNull()) {
+            // chop to remove the first |
+            const QStringList especs = extraSpecs.remove(0, 1).split('|', QString::KeepEmptyParts);
+            for (QString spec : especs) {
+                if (spec.isEmpty()) {
+                    specs += DEFAULT_PATH_SPECIFICATION;
+                } else {
+                    specs += spec;
+                }
+            }
+        }
+        specs.removeDuplicates();
+
+        // now we have `specs` which each one needs to be parse
+
+        // GROUPING:
+        // ----------
+
+        // check if we need to create a non-capturing group because of
+        // multiple options that are valid, or a capturing group for the splat arguments
+        if (!groupStarted) {
+            if (GROUPING_REQUIRED.match(level).hasMatch()) {
+                buff += "(";
+                groupStarted = true;
+            } else if (specs.size() > 2) {
+                buff += "(?:";
+                groupStarted = true;
+            }
+        }
+
+        // WILDCARDS:
+        // ----------
+
+        // Fix all of the wildcards within the syntax
+
+        // regex to remove extra wildcards
+        static const QRegularExpression WILDCARD_STAR_GT2("\\*{2,}");
+        static const QRegularExpression WILDCARD_PLUS_GT2("\\+{2,}");
+
+        // for the OR options, replace wild cards if needed
+        for (QString spec : specs) {
+            spec = spec.replace('.', "\\.");
+
+            spec = replaceRE(WILDCARD_STAR_GT2, spec, "*");
+            spec = replaceRE(WILDCARD_PLUS_GT2, spec, "+");
+
+            spec = replaceRE(WILDCARD_STAR, spec, VALID_NAME_CHARS % '*');
+            spec = replaceRE(WILDCARD_PLUS, spec, VALID_NAME_CHARS % '+');
+
+            buff += spec % '|';
+        }
+
+        // take off the last | since it is always added
+        buff.chop(1);
 
         if (groupStarted) {
             // need to close the grouping
