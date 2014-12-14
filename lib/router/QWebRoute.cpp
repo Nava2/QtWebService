@@ -26,6 +26,8 @@
 #include <QStringBuilder>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
+#include <QRegularExpressionMatchIterator>
+#include <QStack>
 #include <QStringList>
 #include <QDebug>
 #include <QHash>
@@ -39,7 +41,10 @@ public:
     QWebRoute_Regex(const QRegularExpression &route,
                      QObject *parent = nullptr)
         : QObject(parent), QWebRoute(route.pattern()), m_urlPattern(route) {
-
+#if QT_VERSION >= 0x054000
+        // if on Qt 5.4+ we can optimize the regex
+        m_urlPattern.optimize();
+#endif
     }
 
     /*!
@@ -58,10 +63,7 @@ public:
      * @return
      */
     virtual
-    ParsedRoute::Ptr const checkPath(const QString path, const QStringList &sep) {
-        // ignore the separated path
-        Q_UNUSED(sep);
-
+    ParsedRoute::Ptr const checkPath(const QString path) {
         typedef QRegularExpression QRE;
 
         QRegularExpressionMatch match = m_urlPattern.match(path, 0, QRE::NormalMatch, QRE::AnchoredMatchOption);
@@ -69,6 +71,10 @@ public:
         // check if there was a match, if there is then make sure that it was the entire
         // expression, not part of it
         if (!match.hasMatch()) {
+            if (match.hasPartialMatch()) {
+                qDebug() << "QWebRoute::checkPath(" << path << "): No match was found using '" << m_urlPattern.pattern() << "', but did find partial match.";
+            }
+            
             return ParsedRoute::Ptr();
         }
 
@@ -99,18 +105,26 @@ private:
 };
 
 
-QWebRoute::Ptr QWebRouteFactory::createRegex(const QString &comp) const {
+QWebRoute::Ptr QWebRouteFactory::createRegex(const QString &comp) const {    
     return createRegex(QRegularExpression(comp));
 }
 
 QWebRoute::Ptr QWebRouteFactory::createRegex(const QRegularExpression &regex) const {
+    
     clearError();
+    
+    if (regex.pattern().endsWith('/') || regex.pattern().endsWith("/$")) {
+        setError(QWebRouteFactory::SLASH_TERMINATOR, "Path can not end with /, recieved: " % regex.pattern());
+        
+        return QWebRoute::Ptr();
+    }
+    
     return QWebRoute::Ptr(new QWebRoute_Regex(regex));
 }
 
 // TODO Replace with boost::spirit
 static
-const QString VALID_OPT_CHARS("[\\w\\d\\-_\\*\\.]");
+const QString VALID_OPT_CHARS("[\\w\\d\\-_\\*\\+\\.]");
 
 const QString VALID_NAME_CHARS("[\\w\\d\\-_]");
 
@@ -122,14 +136,43 @@ static
 const QRegularExpression RE_PATH("^(?::(?<name>" % VALID_NAME_CHARS % "+)\\$?)?" %
                                  "(?:(" % VALID_OPT_CHARS % "+)(?:\\|(" % VALID_OPT_CHARS % "+))*)?$");
 
+/**
+ * Replace needle with `with` within haystack. 
+ */
+QString replaceRE(const QRegularExpression &needle, const QString &haystack, const QString &with) {
+
+    QString out = haystack;
+    QRegularExpressionMatchIterator iter = needle.globalMatch(out);
+    QStack<QRegularExpressionMatch> matches;
+    while (iter.hasNext()) {
+        matches.push(iter.next());
+    }
+    
+    while (!matches.isEmpty()) {
+        const auto m = matches.pop();
+        out = out.replace(m.capturedStart(1), m.capturedLength(1), with);
+    }
+    
+    return out;
+}
+
 static
 QString convertPathSyntax(const QString &path, QWebRouteFactory::CreationError * const error) {
+    
+    const static QString WILDCARD_CHARS = "(" % VALID_NAME_CHARS % "+)";
+    const static QRegularExpression WILDCARD_STAR("[^\\\\](\\*)");
+    const static QRegularExpression WILDCARD_PLUS("[^\\\\](\\+)");
 
     typedef QRegularExpression QRE;
 
     if (!path.startsWith('/')) {
         *error = QWebRouteFactory::ROOT_MISSING;
         return QString("Path Error: Path did not start with /");
+    }
+    
+    if (path.endsWith('/')) {
+        *error = QWebRouteFactory::SLASH_TERMINATOR;
+        return "Path Error: Path ends with /";
     }
 
     const QStringList pathParts = path.split('/', QString::SkipEmptyParts);
@@ -173,16 +216,39 @@ QString convertPathSyntax(const QString &path, QWebRouteFactory::CreationError *
             // may or may not be present)
             const QStringList OROpts = match.capturedTexts().mid(2);
 
+            static const QRegularExpression GROUP_REQ("(?:[^\\\\][\\*\\+]|^[\\*\\+])");
             // check if we need to create a non-capturing group because of
             // multiple options that are valid.
-            if (!groupStarted && OROpts.size() > 1) {
-                buff += "(?:";
-                groupStarted = true;
-            }
+            if (!groupStarted) {
+                if (GROUP_REQ.match(part).hasMatch()) {
+                    buff += "(";
+                    groupStarted = true;
+                } else if (OROpts.size() > 1) {
+                    buff += "(?:";
+                    groupStarted = true;
+                }
+            } 
+            
+            static const QRegularExpression WILDCARD_STAR_GT2("\\*{2,}");
+            static const QRegularExpression WILDCARD_PLUS_GT2("\\+{2,}");
 
+            // for the OR options, replace wild cards if needed
             for (QString opt : OROpts) {
                 opt = opt.replace('.', "\\.");
-                opt = opt.replace('*', VALID_NAME_CHARS % "+");
+                
+                opt = replaceRE(WILDCARD_STAR_GT2, opt, "*");
+                opt = replaceRE(WILDCARD_PLUS_GT2, opt, "+");
+                
+                opt = replaceRE(WILDCARD_STAR, opt, VALID_NAME_CHARS % '*');
+                if (opt.startsWith('*')) {
+                    opt = opt.replace(0, 1, VALID_NAME_CHARS % '*');
+                }
+                
+                opt = replaceRE(WILDCARD_PLUS, opt, VALID_NAME_CHARS % '+');
+                if (opt.startsWith('+')) {
+                    opt = opt.replace(0, 1, VALID_NAME_CHARS % '+');
+                }
+       
                 buff += opt % '|';
             }
 
@@ -190,7 +256,7 @@ QString convertPathSyntax(const QString &path, QWebRouteFactory::CreationError *
             buff.chop(1);
         } else {
             // there was no char placed, need to insert a wildcard:
-            buff += "[\\w\\d\\-_]+";
+            buff += VALID_NAME_CHARS % "+";
         }
 
         if (groupStarted) {
@@ -229,12 +295,12 @@ QWebRoute::Ptr QWebRouteFactory::create(const QString &route) const {
     QRegularExpression re(expr);
 
     if (!re.isValid()) {
-        setError(INVALID_REGEX_PRODUCED, "Invalid Regex Produced, {re = " % re.pattern() % ", route = " % route % '}');
+        setError(INVALID_REGEX_PRODUCED, "Invalid Regex Produced (error index: " % QString::number(re.patternErrorOffset()) % "), {re = " % re.pattern() % ", route = " % route % '}');
 
         return QWebRoute::Ptr();
     }
 
-//    qDebug() << "Parsed: '" << route << "' -> '" << re.pattern() << '\'';
+    qDebug() << "Parsed: '" << route << "' -> '" << re.pattern() << '\'';
 
     clearError();
     return QWebRoute::Ptr(new QWebRoute_Regex(re));

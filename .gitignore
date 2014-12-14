@@ -2,8 +2,8 @@
 build
 
 # KDevelop
-kde?
-*.kde?
+kdev?
+*.kdev?
 
 # Generated
 CMakeLists.txt.user
