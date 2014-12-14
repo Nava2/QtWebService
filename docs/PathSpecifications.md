@@ -5,7 +5,7 @@ than Regex and this was the intent.
 
 For example, the consider the following (overly complicated, partially contrived) example:
 *QtWS:* `/:action$create|delete/:type$withdrawl|deposit|status/:userId$user+/`
-*Regex:* 
+*Regex:* `^/(?<action>create|delete)/(?<type>withdrawl|deposit|status)/(?<userId>user[\w\d\-_]+)$`
 
 ## Basics
 

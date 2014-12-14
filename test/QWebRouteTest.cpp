@@ -82,8 +82,6 @@ SCENARIO( "Create and match DSL paths", "[QWebRoute]" ) {
     typedef QWebRoute::ParsedRoute::Ptr ResultPtr;
     
     const QWebRouteFactory factory;
-    auto ptr = factory.create("/:action$create|delete/:type$withdrawl|deposit|status/:userId$user+");
-    REQUIRE(ptr);
     
     GIVEN( "Invalid syntax" ) {
         

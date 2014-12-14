@@ -63,10 +63,10 @@ public:
      * @return
      */
     virtual
-    ParsedRoute::Ptr const checkPath(const QString path) {
+    ParsedRoute::Ptr const checkPath(const QString &path) {
         typedef QRegularExpression QRE;
 
-        QRegularExpressionMatch match = m_urlPattern.match(path, 0, QRE::NormalMatch, QRE::AnchoredMatchOption);
+        const QRegularExpressionMatch match = m_urlPattern.match(path, 0, QRE::NormalMatch, QRE::AnchoredMatchOption);
 
         // check if there was a match, if there is then make sure that it was the entire
         // expression, not part of it
@@ -159,11 +159,10 @@ QString replaceRE(const QRegularExpression &needle, const QString &haystack, con
 static const QString DEFAULT_PATH_SPECIFICATION = "+";
 
 static
-QString convertPathSyntax(const QString &path, QWebRouteFactory::CreationError * const error) {
+QString compilePathSyntax(const QString &path, QWebRouteFactory::CreationError * const error) {
     
-    const static QString WILDCARD_CHARS = "(" % VALID_NAME_CHARS % "+)";
-    const static QRegularExpression WILDCARD_STAR("[^\\\\](\\*)");
-    const static QRegularExpression WILDCARD_PLUS("[^\\\\](\\+)");
+    const static QRegularExpression WILDCARD_STAR("(\\*)");
+    const static QRegularExpression WILDCARD_PLUS("(\\+)");
 
     typedef QRegularExpression QRE;
 
@@ -253,7 +252,7 @@ QString convertPathSyntax(const QString &path, QWebRouteFactory::CreationError *
             if (GROUPING_REQUIRED.match(level).hasMatch()) {
                 buff += "(";
                 groupStarted = true;
-            } else if (specs.size() > 2) {
+            } else if (specs.size() >= 2) {
                 buff += "(?:";
                 groupStarted = true;
             }
@@ -309,7 +308,7 @@ QString convertPathSyntax(const QString &path, QWebRouteFactory::CreationError *
 QWebRoute::Ptr QWebRouteFactory::create(const QString &route) const {
     // create a QRegularExpression from the custom dsl:
     CreationError error = NO_ERROR;
-    QString expr = convertPathSyntax(route, &error);
+    QString expr = compilePathSyntax(route, &error);
 
     if (error != NO_ERROR) {
         setError(error, expr);

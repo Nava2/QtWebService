@@ -135,7 +135,7 @@ public:
      * \returns Valid pointer if found, caller must delete pointer
      */
     virtual
-    ParsedRoute::Ptr const checkPath(const QString path) = 0;
+    ParsedRoute::Ptr const checkPath(const QString &path) = 0;
     
 protected:
 
