@@ -53,7 +53,7 @@ bool spinUntil(T * obj, F callback, const int msec = 400)
     eLoop.exec();
 
     // Return true if the signal was triggered
-    return timeOutFail;
+    return !timeOutFail;
 }
 
 } // end namespace testUtils
