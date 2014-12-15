@@ -27,8 +27,6 @@
 #include <QEventLoop>
 #include <QObject>
 
-#include "catch/catch.hpp"
-
 /**
  * @file Useful test harnesses and utilities, this file should include all others.
  */
@@ -37,9 +35,11 @@ namespace testUtils {
 
 /**
  * Spins until either `msec` milliseconds pass or the `callback` signal fires, if it times out, the test will fail.
+ *
+ * @return true if signal is triggered, false if there is a timeout fail
  */
 template <class T, typename F>
-void spinUntil(T * obj, F callback, const int msec = 400)
+bool spinUntil(T * obj, F callback, const int msec = 400)
 {
     //Spin until we get the reply or timeout
     QEventLoop eLoop;
@@ -52,8 +52,8 @@ void spinUntil(T * obj, F callback, const int msec = 400)
     QObject::connect(obj, callback, &eLoop, &QEventLoop::quit);
     eLoop.exec();
 
-    // if the timer is still active, it timed out, thus the test failed.
-    REQUIRE(!timeOutFail);
+    // Return true if the signal was triggered
+    return timeOutFail;
 }
 
 } // end namespace testUtils

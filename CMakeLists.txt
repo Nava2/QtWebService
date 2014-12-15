@@ -85,6 +85,8 @@ SET( QtWebService_PUBLIC_HEADER
 
     include/router/QWebRouter.h
     include/router/QWebRoute.h
+
+    include/test/TestUtils.h
 )
 
 SET( QtWebService_PRIVATE_HEADER

@@ -14,7 +14,7 @@
 #include "router/QWebRequest.h"
 #include "router/QWebResponse.h"
 
-#include "TestUtils.h"
+#include "test/TestUtils.h"
 
 SCENARIO( "A simple service is configured and used", "[QWebService]" ) {
 
@@ -49,8 +49,9 @@ SCENARIO( "A simple service is configured and used", "[QWebService]" ) {
             //Post the request
             QNetworkReply* reply = manager.get(request);
 
-            testUtils::spinUntil(&manager, &QNetworkAccessManager::finished, 400);
+            bool timeout = testUtils::spinUntil(&manager, &QNetworkAccessManager::finished, 400);
 
+            REQUIRE(!timeout);
             REQUIRE(reply);
         }
     }
