@@ -25,5 +25,15 @@
   * Unit test header for the wrapper
   * library
   */
-#define CATCH_CONFIG_MAIN
+#define CATCH_CONFIG_RUNNER
 #include "catch/catch.hpp"
+#include <QCoreApplication>
+
+int main( int argc, char* argv[] )
+{
+  QCoreApplication app(argc,argv);
+
+  int result = Catch::Session().run( argc, argv );
+
+  return result;
+}

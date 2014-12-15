@@ -41,7 +41,7 @@ public:
     QWebRoute_Regex(const QRegularExpression &route,
                      QObject *parent = nullptr)
         : QObject(parent), QWebRoute(route.pattern()), m_urlPattern(route) {
-#if QT_VERSION >= 0x054000
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
         // if on Qt 5.4+ we can optimize the regex
         m_urlPattern.optimize();
 #endif

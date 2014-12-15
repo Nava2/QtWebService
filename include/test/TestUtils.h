@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 kevin
+ * Copyright 2014 Kevin Brightwell <kevin.brightwell2@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -20,36 +20,42 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef TEMPLATEPARSER_H
-#define TEMPLATEPARSER_H
+#ifndef TESTUTILS_H
+#define TESTUTILS_H
 
+#include <QTimer>
+#include <QEventLoop>
+#include <QObject>
 
-#include "private/qtwebservicefwd.h"
+/**
+ * @file Useful test harnesses and utilities, this file should include all others.
+ */
 
-#include "QWebMiddleWare.h"
-#include "QWebService.h"
-#include "router/QWebRequest.h"
+namespace testUtils {
 
-class TemplateParser : public QWebMiddleWare
+/**
+ * Spins until either `msec` milliseconds pass or the `callback` signal fires, if it times out, the test will fail.
+ *
+ * @return true if signal is triggered, false if there is a timeout fail
+ */
+template <class T, typename F>
+bool spinUntil(T * obj, F callback, const int msec = 400)
 {
-public:
-    TemplateParser(QObject *parent = nullptr);
+    //Spin until we get the reply or timeout
+    QEventLoop eLoop;
 
-    /**
-     * @brief ~QWebMiddleWare No-operation destructor specified for inheritance concerns.
-     */
-    virtual
-    ~TemplateParser() { }
+    QTimer timer;
+    bool timeOutFail = false;
+    QObject::connect(&timer, &QTimer::timeout, [&](){ timeOutFail = true; eLoop.quit(); });
 
-    virtual
-    void configure(RegistrarEntry * const entry) {
-        connect(entry, &QWebMiddleWareRegistrar::Entry::webResponseDataPrepared,
-                this, &TemplateParser::myFunc);
-    }
+    timer.start(msec);
+    QObject::connect(obj, callback, &eLoop, &QEventLoop::quit);
+    eLoop.exec();
 
-    bool myFunc(QSharedPointer<QWebRequest> req, QByteArray in, QSharedPointer<QByteArray> &out) {
-        return false;
-    }
-};
+    // Return true if the signal was triggered
+    return !timeOutFail;
+}
 
-#endif // TEMPLATEPARSER_H
+} // end namespace testUtils
+
+#endif // TESTUTILS_H

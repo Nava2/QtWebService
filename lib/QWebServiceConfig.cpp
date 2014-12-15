@@ -3,6 +3,8 @@
 #include "router/QWebRoute.h"
 #include "router/QWebRouter.h"
 
+#include <assert.h>
+
 QWebServiceConfig::QWebServiceConfig() :
     m_handlers(),
     m_specialHandlers(),
@@ -55,6 +57,7 @@ QWebService* QWebServiceConfig::build(QObject* parent) const
                 }
 
                 // TODO CHECK FOR ERRORS
+                assert(routeObj);
 
                 routeBuff[str] = routeObj;
             }

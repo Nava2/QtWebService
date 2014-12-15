@@ -10,6 +10,8 @@ find_package(QHttpServer REQUIRED)
 
 SET( QtWebService_testsrcs
     QWebRouteTest.cpp
+    QWebServiceTest.cpp
+    catch/catch.hpp
 )
 
 include_directories(${INCLUDE_OUTPUT_DIR})
