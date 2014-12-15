@@ -49,9 +49,9 @@ SCENARIO( "A simple service is configured and used", "[QWebService]" ) {
             //Post the request
             QNetworkReply* reply = manager.get(request);
 
-            bool timeout = testUtils::spinUntil(&manager, &QNetworkAccessManager::finished, 400);
+            bool noTimeout = testUtils::spinUntil(&manager, &QNetworkAccessManager::finished, 400);
 
-            REQUIRE(!timeout);
+            REQUIRE(noTimeout);
             REQUIRE(reply);
         }
     }
