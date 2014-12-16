@@ -56,6 +56,10 @@ message(STATUS "Found Qt version = ${Qt5Core_VERSION_STRING}")
 
 find_package(QHttpServer REQUIRED)
 
+message(STATUS "Found QHttpServer at = ${QHTTPSERVER_INCLUDE_DIRS}, LIB = ${QHTTPSERVER_LIBRARIES}")
+
+include_directories(${QHTTPSERVER_INCLUDE_DIRS})
+
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DQTWEBSERVICE_EXPORT")
 
 SET(QtWebService_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib/")
@@ -117,7 +121,7 @@ target_link_libraries(QtWebService
         Qt5::Core
         Qt5::Xml
 
-        QHttpServer
+        ${QHTTPSERVER_LIBRARIES}
     )
 
 # configure:
