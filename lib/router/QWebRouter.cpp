@@ -56,9 +56,10 @@ const QWebRouter::RouteFunction QWebRouter::DEFAULT_404 = [](QSharedPointer<QWeb
 QWebRouter::QWebRouter(const QHash<QWebService::HttpMethod, RoutePairList> routes,
                          const RouteFunction fourohfour,
                          QObject* parent)
-    : QObject(parent), 
-    m_routes(routes),
-    m_404(fourohfour) {
+    : QObject(parent),
+      m_routes(routes),
+      m_404(fourohfour),
+      m_service(nullptr) {
     
 }
 
