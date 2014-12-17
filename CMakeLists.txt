@@ -72,6 +72,8 @@ SET( QtWebService_SRCS
     lib/QWebService.cpp
     lib/QWebServiceConfig.cpp
 
+    lib/utils/QStructObjBuilder.cpp
+    
     lib/router/QWebRequest.cpp
     lib/router/QWebResponse.cpp
 
@@ -84,6 +86,8 @@ SET( QtWebService_PUBLIC_HEADER
     include/QWebService.h
     include/QWebServiceConfig.h
 
+    include/utils/QStructObjBuilder.h
+    
     include/router/QWebRequest.h
     include/router/QWebResponse.h
 
