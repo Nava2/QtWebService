@@ -11,6 +11,8 @@ find_package(QHttpServer REQUIRED)
 SET( QtWebService_testsrcs
     QWebRouteTest.cpp
     QWebServiceTest.cpp
+    QWebRouterTest.cpp
+    
     catch/catch.hpp
 )
 

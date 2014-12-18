@@ -13,7 +13,7 @@ QWebServiceConfig::QWebServiceConfig() :
 
     // initialize the handler QHash
 #define HANDLER_INIT( TYPE ) \
-    m_handlers[ QWebService::HttpMethod::TYPE ] = QSet<QWebServiceConfig::Key::Ptr>()
+    m_handlers[ QWebService::HttpMethod::TYPE ] = QList<QWebServiceConfig::Key::Ptr>()
 
     HANDLER_INIT(HTTP_GET);
     HANDLER_INIT(HTTP_DELETE);
@@ -21,6 +21,9 @@ QWebServiceConfig::QWebServiceConfig() :
     HANDLER_INIT(HTTP_PUT);
 
 #undef HANDLER_INIT
+    
+    m_middleware[QWebRouter::PRE_HANDLER] = QList<QPair<QWebRouter::ApplyPredicate, QWebRouter::RouteFunction> >();
+    m_middleware[QWebRouter::POST_HANDLER] = QList<QPair<QWebRouter::ApplyPredicate, QWebRouter::RouteFunction> >();
 
 }
 
@@ -70,14 +73,31 @@ QWebService* QWebServiceConfig::build(QObject* parent) const
     }
 
     // handlerTable is now populated minimizing QHttpRoute instances
+    
 
     QWebService::RouteFunction fourohfour = this->m_404;
     if (!fourohfour) {
         fourohfour = QWebRouter::DEFAULT_404;
     }
 
+    
+    // populate middlewares:
+    QHash<QWebRouter::RouteStage, QVector<QPair<QWebRouter::ApplyPredicate, QWebRouter::RouteFunction> > > mw;
+    for (QWebRouter::RouteStage stage : m_middleware.keys()) {
+        auto stageMW = m_middleware[stage];
+        
+        QVector<QPair<QWebRouter::ApplyPredicate, QWebRouter::RouteFunction> > mwVec;
+        mwVec.reserve(stageMW.size());
+        
+        for (auto pair : stageMW) {
+            mwVec.append(pair);
+        }
+        
+        mw.insert(stage, mwVec);
+    }
+    
     // we let the QHttpRouter ctor setup the parent relationships
-    auto router = new QWebRouter(handlerTable, fourohfour);
+    auto router = new QWebRouter(handlerTable, mw, fourohfour);
 
     auto server = new QHttpServer();
     QObject::connect(server, &QHttpServer::newRequest, router, &QWebRouter::handleRoute );
@@ -102,5 +122,13 @@ QWebServiceConfig& QWebServiceConfig::fourohfour(QWebService::RouteFunction func
 {
     this->m_404 = func;
 
+    return *this;
+}
+
+QWebServiceConfig& QWebServiceConfig::installMiddleware(const QWebRouter::RouteStage stage, 
+                                     QWebRouter::ApplyPredicate predicate, 
+                                     QWebRouter::RouteFunction apply) {
+    m_middleware[stage] += QPair<QWebRouter::ApplyPredicate, QWebRouter::RouteFunction>(predicate, apply);
+    
     return *this;
 }

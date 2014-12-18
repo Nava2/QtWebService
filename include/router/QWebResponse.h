@@ -59,6 +59,9 @@ public:
     };
 
     typedef QHttpResponse::StatusCode StatusCode;
+    
+    //!< Typedef for simplicity declaring methods
+    typedef QSharedPointer<QWebResponse> Ptr;
 
     /**
      * @brief create Create a new instance of %QWebRequest

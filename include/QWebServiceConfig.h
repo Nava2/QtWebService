@@ -30,18 +30,14 @@
 #include <QHttpServer/qhttpserver.h>
 
 #include <functional>
+#include <type_traits>
+#include <unordered_set>
 
 
 #include "private/qtwebservicefwd.h"
 
 #include "QWebService.h"
-
-/// @cond noDoc
-/// Simple wayt to define the type, while not typedefing it because we don't want to leak it
-#define ROUTE_MEM_FN( TYPENAME, VAR ) void (TYPENAME::* VAR )(QSharedPointer<QWebRequest>, QSharedPointer<QWebResponse>)
-
-#define ROUTE_FN( VAR ) QWebService::RouteFunction VAR
-/// @endcond noDoc
+#include "router/QWebRouter.h"
 
 /// Used to specify a QWebService's configuration
 class QTWEBSERVICE_API QWebServiceConfig {
@@ -128,6 +124,68 @@ public:
                     QWebService::HttpMethod::HTTP_PUT, QWebService::HttpMethod::HTTP_POST };
     }
 
+    /**
+     * Installs a 404 handler, the default behaviour is to redirect the
+     * user to root.
+     * @param func a function that matches @ref RouteFunction specification.
+     * @return reference to `*this`.
+     */
+    QWebServiceConfig &fourohfour(QWebService::RouteFunction func);
+
+    /*!
+     * Installs a 404 handler, the default behaviour is to redirect the
+     * user to root.
+     * @param handler A @ref QHttpRouteHandler instance which will be bound via
+     *      @ref QObject::setParent to `this` instance.
+     * @return reference to `*this`.
+     */
+    template <class T>
+    inline
+    QWebServiceConfig &fourohfour(T * handler) {
+        return QWebServiceConfig::fourohfour(bindHandler(handler));
+    }
+
+    /**
+     * Installs a "middleware" run at stage that `predicate` returns true for, at the `stage` specified.
+     * 
+     * These methods are not guarenteed to be applied in the order specified. 
+     * 
+     * @param stage     The point to run the predicate and apply function if required. 
+     * @param predicate Function used to check if the `apply` function should be run -- <strong>NOTE:<strong> Will be 
+     *                  run <em>a lot</em>, this function must be fast and have no leaks/resource losses. 
+     * @param apply     Function used to transform and change the route parameters after or before.
+     */
+    QWebServiceConfig &installMiddleware(const QWebRouter::RouteStage stage, 
+                                         QWebRouter::ApplyPredicate predicate, 
+                                         QWebRouter::RouteFunction apply);
+    
+    /**
+     * Installs a "middleware" run at stages that `predicate` returns true for, at the `stage` specified.
+     * 
+     * These methods are not guarenteed to be applied in the order specified. 
+     * 
+     * @param stages    Multiple points to run, usually used as `{Stage1, Stage4}`.
+     * @param predicate Function used to check if the `apply` function should be run -- <strong>NOTE:<strong> Will be 
+     *                  run <em>a lot</em>, this function must be fast and have no leaks/resource losses. 
+     * @param apply     Function used to transform and change the route parameters after or before.
+     */
+    QWebServiceConfig &installMiddleware(const std::vector<QWebRouter::RouteStage> stages, 
+                                         QWebRouter::ApplyPredicate predicate, 
+                                         QWebRouter::RouteFunction apply) {
+        for (QWebRouter::RouteStage stage : stages) {
+            installMiddleware(stage, predicate, apply);
+        }
+        
+        return *this;
+    }
+
+    /**
+     * Create a new instance of %QHttpServer, configuring it.
+     * @param parent Parent of new Builder
+     * @return new %QHttpServer with parent `parent`.
+     */
+    QWebService *build(QObject *parent = nullptr) const;
+    
 /**
  * \define HTTP_METHOD convienience C Macro for defining the different HTTP
  * methods accepted.
@@ -135,25 +193,27 @@ public:
 #define HTTP_METHOD( VISIBILITY, NAME, KEYFUNC ) \
     VISIBILITY : \
     \
-    template <class T> \
+    template <class T, typename MemFun> \
     inline \
-    QWebServiceConfig & NAME (const QString path, T * that, ROUTE_MEM_FN(T, func) ) { \
+    QWebServiceConfig & NAME (const QString path, T * that, MemFun func ) { \
+        static_assert(std::is_member_function_pointer<MemFun>::value, "MemFun is not a member function"); \
         return QWebServiceConfig:: NAME (Key::create(path, bindHandler(that, func))); \
     } \
     \
-    template <class T> \
+    template <class T, typename MemFun> \
     inline \
-    QWebServiceConfig & NAME (const QRegularExpression &regRoute, T * that, ROUTE_MEM_FN(T, func) ) { \
+    QWebServiceConfig & NAME (const QRegularExpression &regRoute, T * that, MemFun func ) { \
+        static_assert(std::is_member_function_pointer<MemFun>::value, "MemFun is not a member function"); \
         return QWebServiceConfig:: NAME (Key::createRegex(regRoute, bindHandler(that, func))); \
     } \
     \
     inline \
-    QWebServiceConfig & NAME (const QString path, ROUTE_FN( func ) ) { \
+    QWebServiceConfig & NAME (const QString path, QWebRouter::RouteFunction func ) { \
         return QWebServiceConfig:: NAME (Key::create(path, func)); \
     } \
     \
     inline \
-    QWebServiceConfig & NAME (const QRegularExpression &regRoute, ROUTE_FN( func )) { \
+    QWebServiceConfig & NAME (const QRegularExpression &regRoute, QWebRouter::RouteFunction func ) { \
         return QWebServiceConfig:: NAME (Key::createRegex(regRoute, func)); \
     } \
     \
@@ -241,35 +301,6 @@ public:
 
 #undef HTTP_METHOD
 
-    /*!
-        * Installs a 404 handler, the default behaviour is to redirect the
-        * user to root.
-        * \param func a function that matches \ref RouteFunction specification.
-        * \return reference to `*this`.
-        */
-    QWebServiceConfig &fourohfour(QWebService::RouteFunction func);
-
-    /*!
-        * Installs a 404 handler, the default behaviour is to redirect the
-        * user to root.
-        * \param handler A \ref QHttpRouteHandler instance which will be bound via
-        *      \ref QObject::setParent to `this` instance.
-        * \return reference to `*this`.
-        */
-    template <class T>
-    inline
-    QWebServiceConfig &fourohfour(T * handler) {
-        return QWebServiceConfig::fourohfour(bindHandler(handler));
-    }
-
-
-    /**
-     * Create a new instance of %QHttpServer, configuring it.
-     * @param parent Parent of new Builder
-     * @return new %QHttpServer with parent `parent`.
-     */
-    QWebService *build(QObject *parent = nullptr) const;
-
 private:
 
 
@@ -280,8 +311,10 @@ private:
      * @param handler The instance
      * @param func Function pointer to a member function, if unspecified it'll `use operator ()`
      */
-    template <class T> inline
-    QWebService::RouteFunction bindHandler(T *handler, ROUTE_MEM_FN(T, func) = &T::operator ()) {
+    template <class T, class F> inline
+    QWebService::RouteFunction bindHandler(T *handler, F func = &T::operator ()) {
+        static_assert(std::is_member_function_pointer<F>::value, "Function type is not member function.");
+        
         using namespace std::placeholders;
 
         return std::bind(func, handler, _1, _2);
@@ -298,9 +331,11 @@ private:
         m_handlers[method] += key;
     }
 
-    QHash<QWebService::HttpMethod, QSet<Key::Ptr> > m_handlers;
+    QHash<QWebService::HttpMethod, QList<Key::Ptr> > m_handlers;
+    
+    QHash<QWebRouter::RouteStage, QList<QPair<QWebRouter::ApplyPredicate, QWebRouter::RouteFunction> > > m_middleware;
 
-    QSet<QObject *> m_specialHandlers;
+    QList<QObject *> m_specialHandlers;
 
     QWebService::RouteFunction m_404;
 
@@ -308,9 +343,6 @@ private:
     const QWebRouteFactory * const m_factory;
 
 };
-
-#undef ROUTE_MEM_FN
-#undef ROUTE_FN
 
 inline
 uint qHash(const QWebServiceConfig::Key &key) {

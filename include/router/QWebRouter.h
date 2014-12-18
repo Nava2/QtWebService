@@ -38,6 +38,9 @@
 #include <QPair>
 #include <QHttpServer/qhttpserver.h>
 
+#include "QWebRequest.h"
+#include "QWebResponse.h"
+
 
 class QTWEBSERVICE_API QWebRouter : public QObject
 {
@@ -51,6 +54,22 @@ public:
     
     //!< Re-typedef %QHttpServer::RouteFunction
     typedef QWebService::RouteFunction RouteFunction;
+    
+    typedef std::function<bool(QSharedPointer<QWebRequest>, QSharedPointer<QWebResponse>)> ApplyPredicate;
+    
+    static const ApplyPredicate ALWAYS;
+    static const ApplyPredicate NEVER;
+    
+    /**
+     * Used to specify when to run a middleware. 
+     */
+    enum RouteStage {
+        //!< Run before handler
+        PRE_HANDLER = 0,
+        
+        //!< Run after handler
+        POST_HANDLER = 1
+    };
     
     typedef QPair<QSharedPointer<QWebRoute>, RouteFunction> RoutePair;
     typedef QList<RoutePair> RoutePairList;
@@ -77,9 +96,10 @@ private slots:
 
 private:
     
-    explicit QWebRouter(const QHash<QWebService::HttpMethod, RoutePairList> routes,
-                         const RouteFunction fourohfour,
-                         QObject* parent = nullptr);
+    explicit QWebRouter(const QHash< QWebService::HttpMethod, QWebRouter::RoutePairList >& routes, 
+                        const QHash< QWebRouter::RouteStage, QVector< QPair< QWebRouter::ApplyPredicate, QWebRouter::RouteFunction > > >& middleware, 
+                        const QWebRouter::RouteFunction fourohfour, 
+                        QObject* parent = nullptr);
 
     void setWebService(QWebService * const service) {
         if (!m_service && service) {
@@ -88,21 +108,24 @@ private:
             qDebug() << "Tried to reset WebService to a second time";
         }
     }
+    
+    /**
+     * Filter the middleware retrieving the valid versions based on the predicate. 
+     * @param stage     Stage of the routing cared about. 
+     * @param req       The `QWebRequest` that is passed
+     * @param resp      The `QWebResponse` that is passed 
+     */
+    const QVector<RouteFunction> getMiddleware(const RouteStage stage, const QWebRequest::Ptr req, const QWebResponse::Ptr resp);
 
     const QHash<QWebService::HttpMethod, RoutePairList> m_routes;
+    
+    const QHash<RouteStage, QVector< QPair<ApplyPredicate, RouteFunction> > > m_middleware;
 
     const RouteFunction m_404;
 
     const QWebService *m_service;
     
 };
-
-//QDebug operator<<(QDebug dbg, const QWebRouter &router)
-//{
-//    dbg.nospace() << "QWebRouter{0x" << QString::number((long)&router, 16) << "}";
-
-//    return dbg.space();
-//}
 
 #undef HTTP_METHOD
 

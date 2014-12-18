@@ -49,7 +49,7 @@ SCENARIO( "A simple service is configured and used", "[QWebService]" ) {
             //Post the request
             QNetworkReply* reply = manager.get(request);
 
-            bool noTimeout = testUtils::spinUntil(&manager, &QNetworkAccessManager::finished, 400);
+            bool noTimeout = QtWS::test::spinUntil(&manager, &QNetworkAccessManager::finished, 400);
 
             REQUIRE(noTimeout);
             REQUIRE(reply);

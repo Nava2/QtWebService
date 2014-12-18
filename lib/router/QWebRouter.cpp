@@ -26,6 +26,8 @@
 #include "router/QWebRequest.h"
 #include "router/QWebResponse.h"
 
+#include <assert.h>
+
 #include <QDebug>
 #include <QSharedPointer>
 
@@ -52,12 +54,17 @@ const QWebRouter::RouteFunction QWebRouter::DEFAULT_404 = [](QSharedPointer<QWeb
         resp->writeText(msg.replace(QWebRouter::DEFAULT_404_PATH_REPL,
                                             req->path()), "text/html");
     };
+    
+const QWebRouter::ApplyPredicate QWebRouter::ALWAYS = [](QSharedPointer<QWebRequest> re, QSharedPointer<QWebResponse> rs) -> bool { return true; };
+const QWebRouter::ApplyPredicate QWebRouter::NEVER = [](QSharedPointer<QWebRequest> re, QSharedPointer<QWebResponse> rs) -> bool { return false; };
 
-QWebRouter::QWebRouter(const QHash<QWebService::HttpMethod, RoutePairList> routes,
-                         const RouteFunction fourohfour,
-                         QObject* parent)
+QWebRouter::QWebRouter(const QHash< QWebService::HttpMethod, QWebRouter::RoutePairList >& routes, 
+                       const QHash< QWebRouter::RouteStage, QVector< QPair< QWebRouter::ApplyPredicate, QWebRouter::RouteFunction > > >& middleware, 
+                       const QWebRouter::RouteFunction fourohfour,
+                       QObject* parent)
     : QObject(parent),
       m_routes(routes),
+      m_middleware(middleware),
       m_404(fourohfour),
       m_service(nullptr) {
     
@@ -78,6 +85,30 @@ void parsePOSTVars(QString query, QHash<QString, QString> &out) {
         out[keyVals[0]] = keyVals[1];
     }
 }
+
+const QVector< QWebRouter::RouteFunction > QWebRouter::getMiddleware(const QWebRouter::RouteStage stage, const QWebRequest::Ptr req, const QWebResponse::Ptr resp)
+{
+    assert(m_middleware.contains(stage));
+    
+    const QVector<QPair<ApplyPredicate, RouteFunction> > pairs = m_middleware[stage];
+    
+    QVector<RouteFunction > out;
+    out.reserve(pairs.size());
+    
+    for (QPair<ApplyPredicate, RouteFunction> pair : pairs) {
+        if (pair.first(req, resp)) {
+            // predicate was true:
+            out += pair.second;
+        }
+    }
+    
+    // we could squeeze the memory, but it's not needed and the over head is probably more than the overhead saved. 
+    // - Kevin
+    // out.squeeze();
+    
+    return out;
+}
+
 
 void QWebRouter::handleRoute(QHttpRequest* request, QHttpResponse* resp)
 {
@@ -126,8 +157,15 @@ void QWebRouter::handleRoute(QHttpRequest* request, QHttpResponse* resp)
     }
 
     QSharedPointer<QWebResponse> webRespPtr = QWebResponse::create();
-
-    connect(request, &QHttpRequest::end, [this, func, reqPtr, resp, webRespPtr]() {
+    
+    auto preMW = getMiddleware(RouteStage::PRE_HANDLER, reqPtr, webRespPtr);
+    
+    connect(request, &QHttpRequest::end, [this, func, reqPtr, resp, webRespPtr, preMW]() {
+        // apply the pre-emptive middle ware
+        for (auto mw : preMW) {
+            mw(reqPtr, webRespPtr);
+        }
+        
         if (func) {
             // we found a proper route:
             func(reqPtr, webRespPtr);
@@ -136,6 +174,11 @@ void QWebRouter::handleRoute(QHttpRequest* request, QHttpResponse* resp)
             m_404(reqPtr, webRespPtr);
         }
 
+        auto postMW = this->getMiddleware(RouteStage::POST_HANDLER, reqPtr, webRespPtr);
+        for (auto mw : postMW) {
+            mw(reqPtr, webRespPtr);
+        }
+        
         webRespPtr->writeToResponse(reqPtr, resp);
     });
 }

@@ -40,6 +40,9 @@ class QTWEBSERVICE_API QWebRequest : public QObject
 {
     Q_OBJECT
 public:
+    
+    //!< Typedef for simplicity declaring methods
+    typedef QSharedPointer<QWebRequest> Ptr;
 
     /**
      * @brief create Create a new instance of %QHttpRoutedRequest
@@ -50,11 +53,11 @@ public:
      * @param parent QObject parent
      * @return Shared pointer
      */
-    static QSharedPointer<QWebRequest> create(QHttpRequest *httpReq,
-                                      const QHash<QString, QString> &postParams,
-                                      const QHash<QString, QString> &urlParams,
-                                      const QStringList &splat,
-                                      QObject *parent = 0);
+    static Ptr create(QHttpRequest *httpReq,
+                      const QHash<QString, QString> &postParams,
+                      const QHash<QString, QString> &urlParams,
+                      const QStringList &splat,
+                      QObject *parent = 0);
 
     /**
      * @brief urlParams All parameters passed in as "router" variables
