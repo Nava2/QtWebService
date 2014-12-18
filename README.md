@@ -3,7 +3,7 @@ QtWebService
 
 A Qt Web Service framework for easily exposing C++ code to the Web via HTTP. 
 
-[![Build Status](https://travis-ci.org/Nava2/QtWebService.svg)](https://travis-ci.org/Nava2/QtWebService)
+[![Build Status](https://travis-ci.org/Nava2/QtWebService.svg?branch=master)](https://travis-ci.org/Nava2/QtWebService)
 
 This server leverages the [QHttpServer project](https://github.com/nikhilm/qhttpserver) as the back end. 
 
